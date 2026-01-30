@@ -8,10 +8,15 @@ datasource db {
 }
 
 enum UserRole {
-  SYSTEM_OWNER   @map("system_owner")
-  BUSINESS_OWNER @map("business_owner")
-  STAFF          @map("staff")
-  CUSTOMER       @map("customer")
+  SYSTEM_OWNER
+  FARM_ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
 }
 
 enum OAuthProvider {
@@ -21,22 +26,127 @@ enum OAuthProvider {
   apple
 }
 
-
 model User {
-  id                   String        @id @default(uuid())
-  name                 String
-  email                String        @unique
-  passwordHash         String?
-  avatarUrl            String?
-  avatarUrlPath        String?
-  role                 UserRole      @default(CUSTOMER)
-  isVerified           Boolean       @default(false)
-  oauthProvider        OAuthProvider @default(email)
-  oauthProviderId      String?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-  forgotPasswordStatus Boolean       @default(false)
+  id            String  @id @default(uuid())
+  name          String
+  email         String  @unique
+  passwordHash  String?
+  avatarUrl     String?
+  avatarUrlPath String?
+
+  role   UserRole
+  status UserStatus @default(ACTIVE)
+
+  farmId String?
+  farm   Farm?   @relation(fields: [farmId], references: [id])
+
+  isVerified      Boolean       @default(false)
+  oauthProvider   OAuthProvider @default(email)
+  oauthProviderId String?
+
+  forgotPasswordStatus Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([role])
+  @@index([farmId])
 }
 
+model Farm {
+  id              String     @id @default(uuid())
+  name            String
+  status          FarmStatus @default(ACTIVE)
+
+  country         String
+  defaultLanguage String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users        User[]
+  subscription Subscription?
+  payments     Payment[]
+
+  @@index([status])
+}
+
+enum FarmStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
+model Plan {
+  id             String   @id @default(uuid())
+  name           String   @unique   // Basic, Professional, Enterprise
+  priceMonthly   Int
+  priceYearly    Int
+  employeeLimit  Int
+  storageLimitGB Int
+  trialDays      Int
+  isActive       Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id     String @id @default(uuid())
+  farmId String @unique
+  farm   Farm   @relation(fields: [farmId], references: [id])
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  status SubscriptionStatus
+
+  startDate DateTime
+  endDate   DateTime
+
+  price Int // price at time of subscription
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+  CANCELED
+}
+
+model Payment {
+  id     String @id @default(uuid())
+  farmId String
+  farm   Farm   @relation(fields: [farmId], references: [id])
+
+  amount      Int
+  status      PaymentStatus
+  paymentDate DateTime
+
+  createdAt DateTime @default(now())
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+}
+
+model SystemAlert {
+  id        String   @id @default(uuid())
+  type      AlertType
+  message   String
+  farmId    String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum AlertType {
+  SUBSCRIPTION_EXPIRING
+  PAYMENT_FAILED
+  SYSTEM
+}
