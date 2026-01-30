@@ -58,6 +58,12 @@ export const UserService = {
 
   findAllWithProfile: async (prisma) =>
     prisma.user.findMany({}),
+
+  updateAvatar: async (prisma, id, avatarUrl, avatarUrlPath) =>
+    prisma.user.update({
+      where: { id },
+      data: { avatarUrl, avatarUrlPath },
+    }),
 };
 
 
@@ -88,7 +94,8 @@ export const createUserService = async (payload) => {
     data: {
       email,
       passwordHash: hashedPassword,
-      avatarUrl: picture,
+      avatarUrl: picture?.url,
+      avatarUrlPath: picture?.path,
       isVerified: false,
       role: Role.CUSTOMER, // Default role
       oauthProvider: "email",

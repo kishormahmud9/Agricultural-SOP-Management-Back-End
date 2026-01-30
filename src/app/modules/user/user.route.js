@@ -2,10 +2,13 @@ import express from "express";
 import { UserController } from "./user.controller.js";
 import { Role } from "../../utils/role.js";
 import { checkAuthMiddleware } from "../../middleware/checkAuthMiddleware.js";
+import { createMulterUpload } from "../../config/multer.config.js";
+
+const upload = createMulterUpload("avatars");
 
 const router = express.Router();
 
-router.post("/register", UserController.registerUser);
+router.post("/register", upload.single("avatar"), UserController.registerUser);
 router.get("/profile/me", checkAuthMiddleware(...Object.values(Role)), UserController.getUserInfo);
 
 // router.get("/profile", checkAuthMiddleware(...Object.values(Role)) , UserController.getUserProfile);
@@ -15,5 +18,12 @@ router.get("/user-details/:id", checkAuthMiddleware(...Object.values(Role)), Use
 router.get("/all", UserController.getAllUsersWithProfile);
 
 router.post("/update-user", checkAuthMiddleware(...Object.values(Role)), UserController.updateUser);
+
+router.patch(
+    "/upload-avatar",
+    checkAuthMiddleware(...Object.values(Role)),
+    upload.single("avatar"),
+    UserController.uploadAvatar
+);
 
 export const UserRoutes = router;

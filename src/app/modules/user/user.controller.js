@@ -9,7 +9,10 @@ import prisma from "../../prisma/client.js";
 
 const registerUser = async (req, res, next) => {
   try {
-    const picture = req.file?.path || null;
+    const picture = req.file ? {
+      url: `${req.protocol}://${req.get('host')}/uploads/avatars/${req.file.filename}`,
+      path: `uploads/avatars/${req.file.filename}`
+    } : null;
     const payload = {
       prisma,
       ...req.body,
@@ -117,4 +120,27 @@ const updateUser = async (req, res) => {
   }
 };
 
-export const UserController = { registerUser, userDetails, getAllUsersWithProfile, updateUser, getUserInfo };
+const uploadAvatar = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+
+    if (!req.file) {
+      throw new DevBuildError("No file uploaded", 400);
+    }
+
+    const avatarUrlPath = `uploads/avatars/${req.file.filename}`;
+    const avatarUrl = `${req.protocol}://${req.get('host')}/${avatarUrlPath}`;
+    const result = await UserService.updateAvatar(prisma, id, avatarUrl, avatarUrlPath);
+
+    sendResponse(res, {
+      success: true,
+      message: "Avatar uploaded successfully",
+      statusCode: StatusCodes.OK,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const UserController = { registerUser, userDetails, getAllUsersWithProfile, updateUser, getUserInfo, uploadAvatar };
