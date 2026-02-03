@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+////////////////////
+/// ENUMS
+////////////////////
+
 enum UserRole {
   SYSTEM_OWNER
   FARM_ADMIN
@@ -26,25 +30,59 @@ enum OAuthProvider {
   apple
 }
 
+enum FarmStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  EXPIRED
+  CANCELED
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+}
+
+enum AlertType {
+  SUBSCRIPTION_EXPIRING
+  PAYMENT_FAILED
+  SYSTEM
+}
+
+////////////////////
+/// MODELS
+////////////////////
+
 model User {
-  id            String  @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  email         String  @unique
-  passwordHash  String?
+  email         String   @unique
+  passwordHash  String
   avatarUrl     String?
   avatarUrlPath String?
 
   role   UserRole
+  jobTitle  String? 
   status UserStatus @default(ACTIVE)
+  language String?
 
   farmId String?
-  farm   Farm?   @relation(fields: [farmId], references: [id])
+  farm   Farm? @relation(fields: [farmId], references: [id])
 
   isVerified      Boolean       @default(false)
   oauthProvider   OAuthProvider @default(email)
   oauthProviderId String?
+  forgotPasswordStatus Boolean  @default(false)
 
-  forgotPasswordStatus Boolean @default(false)
+  createdTasks  Task[] @relation("CreatedTasks")
+  assignedTasks Task[] @relation("AssignedTasks")
+
+  sentMessages Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,19 +105,18 @@ model Farm {
   users        User[]
   subscription Subscription?
   payments     Payment[]
+  alerts       SystemAlert[]
+
+  tasks    Task[]
+  sops     SOP[]
+  messages Message[]
 
   @@index([status])
 }
 
-enum FarmStatus {
-  ACTIVE
-  INACTIVE
-  TRIAL
-}
-
 model Plan {
   id             String   @id @default(uuid())
-  name           String   @unique   // Basic, Professional, Enterprise
+  name           String   @unique
   priceMonthly   Int
   priceYearly    Int
   employeeLimit  Int
@@ -95,6 +132,7 @@ model Plan {
 
 model Subscription {
   id     String @id @default(uuid())
+
   farmId String @unique
   farm   Farm   @relation(fields: [farmId], references: [id])
 
@@ -105,22 +143,15 @@ model Subscription {
 
   startDate DateTime
   endDate   DateTime
-
-  price Int // price at time of subscription
+  price     Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum SubscriptionStatus {
-  ACTIVE
-  TRIAL
-  EXPIRED
-  CANCELED
-}
-
 model Payment {
   id     String @id @default(uuid())
+
   farmId String
   farm   Farm   @relation(fields: [farmId], references: [id])
 
@@ -131,22 +162,89 @@ model Payment {
   createdAt DateTime @default(now())
 }
 
-enum PaymentStatus {
-  SUCCESS
-  FAILED
-}
-
 model SystemAlert {
-  id        String   @id @default(uuid())
-  type      AlertType
-  message   String
-  farmId    String?
+  id      String   @id @default(uuid())
+  type    AlertType
+  message String
+
+  farmId String?
+  farm   Farm? @relation(fields: [farmId], references: [id])
+
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
-enum AlertType {
-  SUBSCRIPTION_EXPIRING
-  PAYMENT_FAILED
-  SYSTEM
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskShift {
+  MORNING
+  AFTERNOON
+  NIGHT
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(PENDING)
+
+  scheduledAt DateTime
+  shift       TaskShift  @default(MORNING)
+
+  // Farm scope
+  farmId String
+  farm   Farm @relation(fields: [farmId], references: [id])
+
+  // Who created the task (manager)
+  createdById String
+  createdBy   User @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  // Assigned employee
+  assignedToId String?
+  assignedTo   User? @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+
+model SOP {
+  id       String  @id @default(uuid())
+  title    String
+  fileUrl  String
+  isActive Boolean @default(true)
+
+  farmId String
+  farm   Farm @relation(fields: [farmId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([farmId])
+}
+
+model Message {
+  id      String  @id @default(uuid())
+  content String
+  isRead  Boolean @default(false)
+
+  farmId String
+  farm   Farm @relation(fields: [farmId], references: [id])
+
+  senderId String
+  sender   User @relation(fields: [senderId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([farmId])
+  @@index([isRead])
 }
