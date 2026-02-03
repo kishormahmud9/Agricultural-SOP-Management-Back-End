@@ -3,10 +3,14 @@ import { UserRoutes } from "../modules/user/user.route.js";
 import { AuthRouter } from "../modules/auth/auth.route.js";
 import { OtpRouter } from "../modules/otp/otp.route.js";
 
-
 import dashboardRoutes from "../modules/systemOwner/dashboard/dashboard.route.js";
 import farmManagementRoutes from "../modules/systemOwner/farmManagment/farm.route.js";
 import PlanRoutes from "../modules/systemOwner/subscriptionPlan/plan.route.js";
+
+import homeRoutes from "../modules/farmManager/home/home.route.js";
+import taskRoutes from "../modules/farmManager/task/task.route.js";
+import employeeRoutes from "../modules/farmManager/employee/employee.route.js";
+import profileRoutes from "../modules/farmManager/profile/profile.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -40,6 +44,29 @@ const moduleRoutes = [
   },
 
   // SYSTEM OWNER ends here
+
+  // FARM MANAGER starts here
+  {
+    path: "/farm-manager/home",
+    route: homeRoutes,
+  },
+
+  {
+    path: "/farm-manager/tasks",
+    route: taskRoutes,
+  },
+
+  {
+    path: "/farm-manager/employees",
+    route: employeeRoutes,
+  },
+
+  {
+    path: "/farm-manager/profile",
+    route: profileRoutes,
+  },
+
+  // FARM MANAGER ends here
 ];
 
 moduleRoutes.forEach((route) => {
