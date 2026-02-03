@@ -7,9 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-////////////////////
 /// ENUMS
-////////////////////
 
 enum UserRole {
   SYSTEM_OWNER
@@ -59,30 +57,32 @@ enum AlertType {
 ////////////////////
 
 model User {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   name          String
-  email         String   @unique
+  email         String  @unique
   passwordHash  String
   avatarUrl     String?
   avatarUrlPath String?
 
-  role   UserRole
-  jobTitle  String? 
-  status UserStatus @default(ACTIVE)
+  role     UserRole
+  jobTitle String?
+  status   UserStatus @default(ACTIVE)
+
   language String?
 
   farmId String?
-  farm   Farm? @relation(fields: [farmId], references: [id])
+  farm   Farm?   @relation(fields: [farmId], references: [id])
 
-  isVerified      Boolean       @default(false)
-  oauthProvider   OAuthProvider @default(email)
-  oauthProviderId String?
-  forgotPasswordStatus Boolean  @default(false)
+  isVerified           Boolean       @default(false)
+  oauthProvider        OAuthProvider @default(email)
+  oauthProviderId      String?
+  forgotPasswordStatus Boolean       @default(false)
 
   createdTasks  Task[] @relation("CreatedTasks")
   assignedTasks Task[] @relation("AssignedTasks")
 
-  sentMessages Message[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,9 +92,9 @@ model User {
 }
 
 model Farm {
-  id              String     @id @default(uuid())
-  name            String
-  status          FarmStatus @default(ACTIVE)
+  id     String     @id @default(uuid())
+  name   String
+  status FarmStatus @default(ACTIVE)
 
   country         String
   defaultLanguage String
@@ -115,14 +115,14 @@ model Farm {
 }
 
 model Plan {
-  id             String   @id @default(uuid())
-  name           String   @unique
+  id             String  @id @default(uuid())
+  name           String  @unique
   priceMonthly   Int
   priceYearly    Int
   employeeLimit  Int
   storageLimitGB Int
   trialDays      Int
-  isActive       Boolean  @default(true)
+  isActive       Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,7 +131,7 @@ model Plan {
 }
 
 model Subscription {
-  id     String @id @default(uuid())
+  id String @id @default(uuid())
 
   farmId String @unique
   farm   Farm   @relation(fields: [farmId], references: [id])
@@ -150,7 +150,7 @@ model Subscription {
 }
 
 model Payment {
-  id     String @id @default(uuid())
+  id String @id @default(uuid())
 
   farmId String
   farm   Farm   @relation(fields: [farmId], references: [id])
@@ -163,17 +163,16 @@ model Payment {
 }
 
 model SystemAlert {
-  id      String   @id @default(uuid())
+  id      String    @id @default(uuid())
   type    AlertType
   message String
 
   farmId String?
-  farm   Farm? @relation(fields: [farmId], references: [id])
+  farm   Farm?   @relation(fields: [farmId], references: [id])
 
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
-
 
 enum TaskStatus {
   PENDING
@@ -194,19 +193,19 @@ model Task {
   status      TaskStatus @default(PENDING)
 
   scheduledAt DateTime
-  shift       TaskShift  @default(MORNING)
+  shift       TaskShift @default(MORNING)
 
   // Farm scope
   farmId String
-  farm   Farm @relation(fields: [farmId], references: [id])
+  farm   Farm   @relation(fields: [farmId], references: [id])
 
   // Who created the task (manager)
   createdById String
-  createdBy   User @relation("CreatedTasks", fields: [createdById], references: [id])
+  createdBy   User   @relation("CreatedTasks", fields: [createdById], references: [id])
 
   // Assigned employee
   assignedToId String?
-  assignedTo   User? @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  assignedTo   User?   @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -216,7 +215,6 @@ model Task {
   @@index([scheduledAt])
 }
 
-
 model SOP {
   id       String  @id @default(uuid())
   title    String
@@ -224,7 +222,7 @@ model SOP {
   isActive Boolean @default(true)
 
   farmId String
-  farm   Farm @relation(fields: [farmId], references: [id])
+  farm   Farm   @relation(fields: [farmId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -233,18 +231,23 @@ model SOP {
 }
 
 model Message {
-  id      String  @id @default(uuid())
+  id      String @id @default(uuid())
   content String
-  isRead  Boolean @default(false)
-
-  farmId String
-  farm   Farm @relation(fields: [farmId], references: [id])
 
   senderId String
-  sender   User @relation(fields: [senderId], references: [id])
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id])
+
+  receiverId String
+  receiver   User   @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  farmId String
+  farm   Farm   @relation(fields: [farmId], references: [id])
+
+  isRead Boolean @default(false)
 
   createdAt DateTime @default(now())
 
+  @@index([senderId])
+  @@index([receiverId])
   @@index([farmId])
-  @@index([isRead])
 }
