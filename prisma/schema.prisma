@@ -213,6 +213,7 @@ model Task {
   assignedTo   User?   @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
   completedAt DateTime?
+  completions TaskCompletion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -265,4 +266,19 @@ model Message {
   @@index([senderId])
   @@index([receiverId])
   @@index([farmId])
+}
+
+model TaskCompletion {
+  id          String   @id @default(uuid())
+
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+
+  completedBy String   // employeeId (User.id)
+  note        String?  // 👈 THIS IS YOUR MESSAGE
+
+  completedAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([completedBy])
 }

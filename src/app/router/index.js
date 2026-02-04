@@ -15,6 +15,7 @@ import messageRoutes from "../modules/farmManager/message/message.route.js";
 
 import employeeHomeRoutes from "../modules/employee/home/home.route.js";
 import employeeSopRoutes from "../modules/employee/sop/sop.route.js";
+import employeeTaskRoutes from "../modules/employee/task/task.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -86,6 +87,11 @@ const moduleRoutes = [
   {
     path: "/employee/sops",
     route: employeeSopRoutes,
+  },
+
+  {
+    path: "/employee/tasks",
+    route: employeeTaskRoutes,
   },
   // EMPLOYEE ends here
 ];
