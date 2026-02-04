@@ -11,6 +11,10 @@ import homeRoutes from "../modules/farmManager/home/home.route.js";
 import taskRoutes from "../modules/farmManager/task/task.route.js";
 import employeeRoutes from "../modules/farmManager/employee/employee.route.js";
 import profileRoutes from "../modules/farmManager/profile/profile.route.js";
+import messageRoutes from "../modules/farmManager/message/message.route.js";
+
+import employeeHomeRoutes from "../modules/employee/home/home.route.js";
+import employeeSopRoutes from "../modules/employee/sop/sop.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -66,7 +70,24 @@ const moduleRoutes = [
     route: profileRoutes,
   },
 
+  {
+    path: "/farm-manager/messages",
+    route: messageRoutes,
+  },
+
   // FARM MANAGER ends here
+
+  // EMPLOYEE starts here
+  {
+    path: "/employee/home",
+    route: employeeHomeRoutes,
+  },
+
+  {
+    path: "/employee/sops",
+    route: employeeSopRoutes,
+  },
+  // EMPLOYEE ends here
 ];
 
 moduleRoutes.forEach((route) => {

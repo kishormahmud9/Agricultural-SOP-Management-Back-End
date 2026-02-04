@@ -81,6 +81,11 @@ model User {
   createdTasks  Task[] @relation("CreatedTasks")
   assignedTasks Task[] @relation("AssignedTasks")
 
+  // phone        String?
+  // employeeCode String?
+  // joinedAt     DateTime?
+
+
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
 
@@ -207,6 +212,8 @@ model Task {
   assignedToId String?
   assignedTo   User?   @relation("AssignedTasks", fields: [assignedToId], references: [id])
 
+  completedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -216,16 +223,24 @@ model Task {
 }
 
 model SOP {
-  id       String  @id @default(uuid())
-  title    String
-  fileUrl  String
-  isActive Boolean @default(true)
+  id            String   @id @default(uuid())
+  title         String
+  module        String
 
-  farmId String
-  farm   Farm   @relation(fields: [farmId], references: [id])
+  // PDF (download)
+  fileUrl       String
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // AI output (read/view)
+  parsedContent Json?     // 👈 AI agent writes here
+  language      String?
+
+  isActive      Boolean  @default(true)
+
+  farmId        String
+  farm          Farm     @relation(fields: [farmId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([farmId])
 }
