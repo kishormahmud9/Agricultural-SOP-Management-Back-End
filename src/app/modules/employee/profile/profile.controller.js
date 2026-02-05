@@ -2,15 +2,7 @@ import { ProfileService } from "./profile.service.js";
 
 const getProfile = async (req, res) => {
   try {
-    const { employeeId } = req.query;
-
-    if (!employeeId) {
-      return res.status(200).json({
-        success: false,
-        message: "employeeId is required (dev mode)",
-        data: null,
-      });
-    }
+    const { id: employeeId } = req.user;
 
     const profile = await ProfileService.getProfile(employeeId);
 

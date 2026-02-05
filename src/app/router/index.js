@@ -19,12 +19,14 @@ import employeeSopRoutes from "../modules/employee/sop/sop.route.js";
 import employeeTaskRoutes from "../modules/employee/task/task.route.js";
 import employeeMessageRoutes from "../modules/employee/message/message.route.js";
 import employeeProfileRoutes from "../modules/employee/profile/profile.route.js";
+import { EmployeeAuthRoutes } from "../modules/employee/auth/auth.route.js";
 
 // NEW ROUTES
 // import { SystemAdminRoutes } from "../modules/systemOwner/admin/admin.route.js";
 // import { FarmAdminRoutes } from "../modules/farmAdmin/farmAdmin.route.js";
 // import { ManagerRoutes } from "../modules/manager/manager.route.js";
 import { SystemOwnerAuthRoutes } from "../modules/systemOwner/auth/auth.route.js";
+import { FarmManagerAuthRoutes } from "../modules/farmManager/auth/auth.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -66,6 +68,11 @@ const moduleRoutes = [
 
   // FARM MANAGER starts here
   {
+    path: "/farm-manager/auth",
+    route: FarmManagerAuthRoutes,
+  },
+
+  {
     path: "/farm-manager/home",
     route: homeRoutes,
   },
@@ -98,6 +105,10 @@ const moduleRoutes = [
   // FARM MANAGER ends here
 
   // EMPLOYEE starts here
+  {
+    path: "/employee/auth",
+    route: EmployeeAuthRoutes,
+  },
   {
     path: "/employee/home",
     route: employeeHomeRoutes,

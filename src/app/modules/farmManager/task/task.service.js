@@ -44,11 +44,11 @@ const getTasks = async (farmId, query) => {
       ...(status && status !== "ALL" ? { status } : {}),
       ...(search
         ? {
-          title: {
-            contains: search,
-            mode: "insensitive",
-          },
-        }
+            title: {
+              contains: search,
+              mode: "insensitive",
+            },
+          }
         : {}),
     },
     include: {
@@ -100,6 +100,7 @@ const updateTask = async (taskId, payload) => {
       scheduledAt: payload.scheduledAt,
       shift: payload.shift,
       sopId: payload.sopId,
+      status: "PENDING",
     },
   });
 };

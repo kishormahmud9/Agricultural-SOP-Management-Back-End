@@ -2,13 +2,14 @@ import { TaskService } from "./task.service.js";
 
 const getMyTasks = async (req, res) => {
   try {
-    const { employeeId, type } = req.query;
+    const { id: employeeId } = req.user;
+    const { type } = req.query;
 
     // Dev mode validation
-    if (!employeeId || !type) {
+    if (!type) {
       return res.status(400).json({
         success: false,
-        message: "employeeId and type are required",
+        message: "type is required",
         data: {
           progress: null,
           tasks: [],
@@ -64,14 +65,8 @@ const getTaskDetails = async (req, res) => {
 const completeTask = async (req, res) => {
   try {
     const { taskId } = req.params;
-    const { note, employeeId } = req.body;
-
-    if (!employeeId) {
-      return res.status(400).json({
-        success: false,
-        message: "employeeId is required (dev mode)",
-      });
-    }
+    const { id: employeeId } = req.user;
+    const { note } = req.body;
 
     const result = await TaskService.completeTask(taskId, employeeId, note);
 

@@ -2,15 +2,7 @@ import { MessageService } from "./message.service.js";
 
 const getInbox = async (req, res) => {
   try {
-    const { employeeId, farmId } = req.query;
-
-    if (!employeeId || !farmId) {
-      return res.status(200).json({
-        success: false,
-        message: "employeeId and farmId are required",
-        data: [],
-      });
-    }
+    const { id: employeeId, farmId } = req.user;
 
     const inbox = await MessageService.getInbox(employeeId, farmId);
 
@@ -32,15 +24,7 @@ const getInbox = async (req, res) => {
 const getConversation = async (req, res) => {
   try {
     const { otherUserId } = req.params;
-    const { employeeId, farmId } = req.query;
-
-    if (!employeeId || !farmId || !otherUserId) {
-      return res.status(200).json({
-        success: false,
-        message: "employeeId, farmId and otherUserId are required",
-        data: [],
-      });
-    }
+    const { id: employeeId, farmId } = req.user;
 
     const messages = await MessageService.getConversation({
       employeeId,

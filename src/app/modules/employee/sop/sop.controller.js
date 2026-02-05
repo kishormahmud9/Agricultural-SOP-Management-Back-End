@@ -2,14 +2,7 @@ import { SopService } from "./sop.service.js";
 
 const getSopModules = async (req, res, next) => {
   try {
-    const { farmId } = req.query;
-
-    if (!farmId) {
-      return res.status(400).json({
-        success: false,
-        message: "farmId is required (dev mode)",
-      });
-    }
+    const { farmId } = req.user;
 
     const result = await SopService.getSopModules(farmId);
 
@@ -24,13 +17,13 @@ const getSopModules = async (req, res, next) => {
 
 const getSopsByModule = async (req, res, next) => {
   try {
-    const { farmId } = req.query;
+    const { farmId } = req.user;
     const { module } = req.params;
 
-    if (!farmId || !module) {
+    if (!module) {
       return res.status(400).json({
         success: false,
-        message: "farmId and module are required",
+        message: "module is required",
       });
     }
 

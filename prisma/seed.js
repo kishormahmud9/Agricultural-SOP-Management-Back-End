@@ -6,7 +6,7 @@ import prisma from "../src/app/prisma/client.js";
 // ===============================
 async function seedSystemOwner() {
   const email = "system@test.com";
-  const password = "system123";
+  const password = "11";
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
