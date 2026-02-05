@@ -2,18 +2,9 @@ import { MessageService } from "./message.service.js";
 
 const getConversations = async (req, res) => {
   try {
-    const { farmId, userId } = req.query;
-
-    if (!farmId || !userId) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-      });
-    }
-
     const conversations = await MessageService.getConversations({
-      farmId,
-      userId,
+      farmId: req.user.farmId,
+      userId: req.user.id,
     });
 
     return res.status(200).json({
@@ -33,11 +24,11 @@ const getConversations = async (req, res) => {
 
 const getChatHistory = async (req, res) => {
   try {
-    const { farmId, userId, partnerId } = req.query;
+    const { partnerId } = req.query;
 
     const messages = await MessageService.getChatHistory({
-      farmId,
-      userId,
+      farmId: req.user.farmId,
+      userId: req.user.id,
       partnerId,
     });
 

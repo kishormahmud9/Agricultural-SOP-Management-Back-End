@@ -1,14 +1,10 @@
 import { TaskService } from "./task.service.js";
 
-// TEMP farmId (auth later)
-const FARM_ID = "9581f927-4563-4808-8514-94f87840d0e8";
-const MANAGER_ID = "8a925b2b-ead9-47c0-bd96-069d5d2fc496";
-
 const createTask = async (req, res) => {
   try {
     const task = await TaskService.createTask({
-      farmId: FARM_ID,
-      createdById: MANAGER_ID,
+      farmId: req.user.farmId,
+      createdById: req.user.id,
       ...req.body,
     });
 
@@ -21,7 +17,7 @@ const createTask = async (req, res) => {
 
 const getTasks = async (req, res) => {
   try {
-    const tasks = await TaskService.getTasks(FARM_ID, req.query);
+    const tasks = await TaskService.getTasks(req.user.farmId, req.query);
     res.json({ success: true, data: tasks });
   } catch (error) {
     console.error("GET_TASKS_ERROR:", error);

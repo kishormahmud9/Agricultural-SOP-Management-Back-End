@@ -44,11 +44,11 @@ const getTasks = async (farmId, query) => {
       ...(status && status !== "ALL" ? { status } : {}),
       ...(search
         ? {
-            title: {
-              contains: search,
-              mode: "insensitive",
-            },
-          }
+          title: {
+            contains: search,
+            mode: "insensitive",
+          },
+        }
         : {}),
     },
     include: {

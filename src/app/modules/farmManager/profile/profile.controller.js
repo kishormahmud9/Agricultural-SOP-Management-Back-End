@@ -1,11 +1,8 @@
 import { ProfileService } from "./profile.service.js";
 
-// TEMP: replace with req.user.id later
-const MANAGER_ID = "8a925b2b-ead9-47c0-bd96-069d5d2fc496"; // 👈 use real manager id
-
 const getProfile = async (req, res) => {
   try {
-    const profile = await ProfileService.getProfile(MANAGER_ID);
+    const profile = await ProfileService.getProfile(req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -26,7 +23,7 @@ const updateLanguage = async (req, res) => {
   try {
     const { language } = req.body;
 
-    const result = await ProfileService.updateLanguage(MANAGER_ID, language);
+    const result = await ProfileService.updateLanguage(req.user.id, language);
 
     return res.status(200).json({
       success: true,

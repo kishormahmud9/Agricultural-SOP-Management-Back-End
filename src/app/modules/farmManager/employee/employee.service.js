@@ -11,11 +11,11 @@ const getEmployees = async (farmId, query) => {
       ...(status && status !== "ALL" ? { status } : {}),
       ...(search
         ? {
-            name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          }
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        }
         : {}),
     },
     select: {

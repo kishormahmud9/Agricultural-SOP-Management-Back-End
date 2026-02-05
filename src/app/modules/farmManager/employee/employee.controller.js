@@ -1,11 +1,8 @@
 import { EmployeeService } from "./employee.service.js";
 
-// TEMP (auth later)
-const FARM_ID = "9581f927-4563-4808-8514-94f87840d0e8";
-
 const getEmployees = async (req, res) => {
   try {
-    const employees = await EmployeeService.getEmployees(FARM_ID, req.query);
+    const employees = await EmployeeService.getEmployees(req.user.farmId, req.query);
 
     res.json({
       success: true,
@@ -23,7 +20,7 @@ const getEmployees = async (req, res) => {
 const getEmployeeDetails = async (req, res) => {
   try {
     const employee = await EmployeeService.getEmployeeDetails(
-      FARM_ID,
+      req.user.farmId,
       req.params.id,
     );
 
@@ -44,7 +41,7 @@ const getEmployeeDetails = async (req, res) => {
 const getEmployeeTasks = async (req, res) => {
   try {
     const tasks = await EmployeeService.getEmployeeTasks(
-      FARM_ID,
+      req.user.farmId,
       req.params.id,
       req.query.type,
     );

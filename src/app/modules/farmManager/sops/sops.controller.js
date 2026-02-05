@@ -4,17 +4,10 @@ import fs from "fs";
 
 export const getSOPs = async (req, res) => {
   try {
-    const { farmId, module, search } = req.query;
-
-    if (!farmId) {
-      return res.status(400).json({
-        success: false,
-        message: "farmId is required",
-      });
-    }
+    const { module, search } = req.query;
 
     const sops = await SOPService.getAll({
-      farmId,
+      farmId: req.user.farmId,
       module,
       search,
     });
@@ -36,16 +29,8 @@ export const getSOPs = async (req, res) => {
 export const getSOPById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { farmId } = req.query;
 
-    if (!farmId) {
-      return res.status(400).json({
-        success: false,
-        message: "farmId is required",
-      });
-    }
-
-    const sop = await SOPService.getById({ id, farmId });
+    const sop = await SOPService.getById({ id, farmId: req.user.farmId });
 
     if (!sop) {
       return res.status(404).json({
@@ -71,16 +56,8 @@ export const getSOPById = async (req, res) => {
 export const downloadSOP = async (req, res) => {
   try {
     const { id } = req.params;
-    const { farmId } = req.query;
 
-    if (!farmId) {
-      return res.status(400).json({
-        success: false,
-        message: "farmId is required",
-      });
-    }
-
-    const fileUrl = await SOPService.getDownloadUrl({ id, farmId });
+    const fileUrl = await SOPService.getDownloadUrl({ id, farmId: req.user.farmId });
 
     if (!fileUrl) {
       return res.status(404).json({

@@ -1,14 +1,8 @@
 import { HomeService } from "./home.service.js";
 
-/**
- * TEMP: hard-coded farmId
- * Replace later with req.user.farmId
- */
-const FARM_ID = "9581f927-4563-4808-8514-94f87840d0e8"; // 👈 REAL farmId
-
 const getHome = async (req, res) => {
   try {
-    const data = await HomeService.getHome(FARM_ID);
+    const data = await HomeService.getHome(req.user.farmId);
 
     return res.status(200).json({
       success: true,
@@ -28,7 +22,7 @@ const getHome = async (req, res) => {
  */
 const getAllTodayTasks = async (req, res) => {
   try {
-    const tasks = await HomeService.getAllTodayTasks(FARM_ID);
+    const tasks = await HomeService.getAllTodayTasks(req.user.farmId);
 
     return res.status(200).json({
       success: true,
