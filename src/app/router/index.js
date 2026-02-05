@@ -12,6 +12,7 @@ import taskRoutes from "../modules/farmManager/task/task.route.js";
 import employeeRoutes from "../modules/farmManager/employee/employee.route.js";
 import profileRoutes from "../modules/farmManager/profile/profile.route.js";
 import messageRoutes from "../modules/farmManager/message/message.route.js";
+import managerSOPRoutes from "../modules/farmManager/sops/sops.route.js";
 
 import employeeHomeRoutes from "../modules/employee/home/home.route.js";
 import employeeSopRoutes from "../modules/employee/sop/sop.route.js";
@@ -76,6 +77,11 @@ const moduleRoutes = [
   {
     path: "/farm-manager/messages",
     route: messageRoutes,
+  },
+
+  {
+    path: "/farm-manager/sops",
+    route: managerSOPRoutes,
   },
 
   // FARM MANAGER ends here
