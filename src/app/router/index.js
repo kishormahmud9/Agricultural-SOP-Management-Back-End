@@ -20,6 +20,12 @@ import employeeTaskRoutes from "../modules/employee/task/task.route.js";
 import employeeMessageRoutes from "../modules/employee/message/message.route.js";
 import employeeProfileRoutes from "../modules/employee/profile/profile.route.js";
 
+// NEW ROUTES
+// import { SystemAdminRoutes } from "../modules/systemOwner/admin/admin.route.js";
+// import { FarmAdminRoutes } from "../modules/farmAdmin/farmAdmin.route.js";
+// import { ManagerRoutes } from "../modules/manager/manager.route.js";
+import { SystemOwnerAuthRoutes } from "../modules/systemOwner/auth/auth.route.js";
+
 export const router = Router();
 const moduleRoutes = [
   {
@@ -36,6 +42,11 @@ const moduleRoutes = [
   },
 
   // SYSTEM OWNER starts here
+  {
+    path: "/system-owner/auth",
+    route: SystemOwnerAuthRoutes,
+  },
+
   {
     path: "/system-owner/dashboard",
     route: dashboardRoutes,

@@ -38,7 +38,7 @@ export const FarmService = {
 
   // ✅ CREATE FARM
   async createFarm(payload) {
-    const { name, adminEmail, country, defaultLanguage } = payload;
+    const { name, adminName, adminEmail, password, country, defaultLanguage } = payload;
 
     return prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
@@ -61,11 +61,11 @@ export const FarmService = {
         },
       });
 
-      const passwordHash = await bcrypt.hash("admin123", 10);
+      const passwordHash = await bcrypt.hash(password, 10);
 
-      await tx.user.create({
+      const admin = await tx.user.create({
         data: {
-          name: "Farm Admin",
+          name: adminName,
           email: adminEmail,
           passwordHash,
           role: "FARM_ADMIN",
@@ -78,7 +78,11 @@ export const FarmService = {
       return {
         farmId: farm.id,
         farmName: farm.name,
-        adminEmail,
+        admin: {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+        },
       };
     });
   },

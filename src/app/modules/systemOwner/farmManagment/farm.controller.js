@@ -20,9 +20,9 @@ export const FarmController = {
 
   async createFarm(req, res, next) {
     try {
-      const { name, adminEmail, country, defaultLanguage } = req.body;
+      const { name, adminName, adminEmail, password, country, defaultLanguage } = req.body;
 
-      if (!name || !adminEmail || !country || !defaultLanguage) {
+      if (!name || !adminName || !adminEmail || !password || !country || !defaultLanguage) {
         return sendResponse(res, {
           success: false,
           statusCode: StatusCodes.BAD_REQUEST,
@@ -33,7 +33,9 @@ export const FarmController = {
 
       const result = await FarmService.createFarm({
         name,
+        adminName,
         adminEmail,
+        password,
         country,
         defaultLanguage,
       });
@@ -41,8 +43,7 @@ export const FarmController = {
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
-        message:
-          "Farm created successfully. Default admin password is admin123",
+        message: "Farm and Farm Admin created successfully",
         data: result,
       });
     } catch (error) {

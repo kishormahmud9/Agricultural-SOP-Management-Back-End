@@ -57,44 +57,50 @@ enum AlertType {
 ////////////////////
 
 model User {
-  id            String  @id @default(uuid())
+  id            String   @id @default(uuid())
   name          String
-  email         String  @unique
+  email         String   @unique
   passwordHash  String
+
+  // Optional profile info
   avatarUrl     String?
   avatarUrlPath String?
+  jobTitle      String?
+  language      String?
 
-  role     UserRole
-  jobTitle String?
-  status   UserStatus @default(ACTIVE)
+  // Role & status
+  role   UserRole
+  status UserStatus @default(ACTIVE)
 
-  language String?
-
+  // Farm (Organization)
   farmId String?
-  farm   Farm?   @relation(fields: [farmId], references: [id])
+  farm   Farm? @relation(fields: [farmId], references: [id])
 
+  // Auth & security
   isVerified           Boolean       @default(false)
-  oauthProvider        OAuthProvider @default(email)
-  oauthProviderId      String?
+  mustChangePassword   Boolean       @default(false)
   forgotPasswordStatus Boolean       @default(false)
 
+  // OAuth support
+  oauthProvider   OAuthProvider @default(email)
+  oauthProviderId String?
+
+  // Relations
   createdTasks  Task[] @relation("CreatedTasks")
   assignedTasks Task[] @relation("AssignedTasks")
-
-  // phone        String?
-  // employeeCode String?
-  // joinedAt     DateTime?
-
 
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
 
+  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([role])
   @@index([farmId])
+  @@index([email])
 }
+
 
 model Farm {
   id     String     @id @default(uuid())
@@ -125,7 +131,7 @@ model Plan {
   priceMonthly   Int
   priceYearly    Int
   employeeLimit  Int
-  storageLimitGB Int
+  
   trialDays      Int
   isActive       Boolean @default(true)
 
