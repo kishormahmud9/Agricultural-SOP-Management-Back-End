@@ -27,6 +27,7 @@ import { EmployeeAuthRoutes } from "../modules/employee/auth/auth.route.js";
 // import { ManagerRoutes } from "../modules/manager/manager.route.js";
 import { SystemOwnerAuthRoutes } from "../modules/systemOwner/auth/auth.route.js";
 import { FarmManagerAuthRoutes } from "../modules/farmManager/auth/auth.route.js";
+import { FarmAdminAuthRoutes } from "../modules/farmAdmin/auth/auth.route.js";
 
 export const router = Router();
 const moduleRoutes = [
@@ -65,6 +66,14 @@ const moduleRoutes = [
   },
 
   // SYSTEM OWNER ends here
+
+  // FARM ADMIN starts here
+  {
+    path: "/farm-admin/auth",
+    route: FarmAdminAuthRoutes,
+  },
+
+  // FARM ADMIN ends here
 
   // FARM MANAGER starts here
   {
