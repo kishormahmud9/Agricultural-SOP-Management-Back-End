@@ -57,10 +57,10 @@ enum AlertType {
 ////////////////////
 
 model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  passwordHash  String
+  id           String @id @default(uuid())
+  name         String
+  email        String @unique
+  passwordHash String
 
   // Optional profile info
   avatarUrl     String?
@@ -74,12 +74,12 @@ model User {
 
   // Farm (Organization)
   farmId String?
-  farm   Farm? @relation(fields: [farmId], references: [id])
+  farm   Farm?   @relation(fields: [farmId], references: [id])
 
   // Auth & security
-  isVerified           Boolean       @default(false)
-  mustChangePassword   Boolean       @default(false)
-  forgotPasswordStatus Boolean       @default(false)
+  isVerified           Boolean @default(false)
+  mustChangePassword   Boolean @default(false)
+  forgotPasswordStatus Boolean @default(false)
 
   // OAuth support
   oauthProvider   OAuthProvider @default(email)
@@ -100,7 +100,6 @@ model User {
   @@index([farmId])
   @@index([email])
 }
-
 
 model Farm {
   id     String     @id @default(uuid())
@@ -126,14 +125,13 @@ model Farm {
 }
 
 model Plan {
-  id             String  @id @default(uuid())
-  name           String  @unique
-  priceMonthly   Int
-  priceYearly    Int
-  employeeLimit  Int
-  
-  trialDays      Int
-  isActive       Boolean @default(true)
+  id            String  @id @default(uuid())
+  name          String  @unique
+  priceMonthly  Int
+  priceYearly   Int
+  employeeLimit Int
+  trialDays     Int
+  isActive      Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -230,24 +228,24 @@ model Task {
 }
 
 model SOP {
-  id            String   @id @default(uuid())
-  title         String
-  module        String
+  id     String @id @default(uuid())
+  title  String
+  module String
 
   // PDF (download)
-  fileUrl       String
+  fileUrl String
 
   // AI output (read/view)
-  parsedContent Json?     // 👈 AI agent writes here
+  parsedContent Json? // 👈 AI agent writes here
   language      String?
 
-  isActive      Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  farmId        String
-  farm          Farm     @relation(fields: [farmId], references: [id])
+  farmId String
+  farm   Farm   @relation(fields: [farmId], references: [id])
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([farmId])
 }
@@ -275,13 +273,13 @@ model Message {
 }
 
 model TaskCompletion {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  taskId      String
-  task        Task     @relation(fields: [taskId], references: [id])
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
 
-  completedBy String   // employeeId (User.id)
-  note        String?  // 👈 THIS IS YOUR MESSAGE
+  completedBy String // employeeId (User.id)
+  note        String? // 👈 THIS IS YOUR MESSAGE
 
   completedAt DateTime @default(now())
 

@@ -7,6 +7,11 @@ import dashboardRoutes from "../modules/systemOwner/dashboard/dashboard.route.js
 import farmManagementRoutes from "../modules/systemOwner/farmManagment/farm.route.js";
 import PlanRoutes from "../modules/systemOwner/subscriptionPlan/plan.route.js";
 
+import farmAdminDashboardRoutes from "../modules/farmAdmin/dashboard/dashboard.route.js";
+import farmAdminUserRoutes from "../modules/farmAdmin/users/user.route.js";
+
+
+
 import homeRoutes from "../modules/farmManager/home/home.route.js";
 import taskRoutes from "../modules/farmManager/task/task.route.js";
 import employeeRoutes from "../modules/farmManager/employee/employee.route.js";
@@ -71,6 +76,16 @@ const moduleRoutes = [
   {
     path: "/farm-admin/auth",
     route: FarmAdminAuthRoutes,
+  },
+
+  {
+    path: "/farm-admin/dashboard",
+    route: farmAdminDashboardRoutes,
+  },
+
+  {
+    path: "/farm-admin/users",
+    route: farmAdminUserRoutes,
   },
 
   // FARM ADMIN ends here
