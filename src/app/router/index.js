@@ -9,7 +9,9 @@ import PlanRoutes from "../modules/systemOwner/subscriptionPlan/plan.route.js";
 
 import farmAdminDashboardRoutes from "../modules/farmAdmin/dashboard/dashboard.route.js";
 import farmAdminUserRoutes from "../modules/farmAdmin/users/user.route.js";
-
+import { OversightRoutes } from "../modules/farmAdmin/oversight/oversight.routes.js";
+import SubscriptionRoutes from "../modules/farmAdmin/subscription/subscription.routes.js";
+import FarmSettingsRoutes from "../modules/farmAdmin/settings/farmSettings.routes.js";
 
 
 import homeRoutes from "../modules/farmManager/home/home.route.js";
@@ -86,6 +88,21 @@ const moduleRoutes = [
   {
     path: "/farm-admin/users",
     route: farmAdminUserRoutes,
+  },
+
+  {
+    path: "/farm-admin/oversight",
+    route: OversightRoutes,
+  },
+
+  {
+    path: "/farm-admin/subscription",
+    route: SubscriptionRoutes,
+  },
+
+  {
+    path: "/farm-admin/settings",
+    route: FarmSettingsRoutes,
   },
 
   // FARM ADMIN ends here
