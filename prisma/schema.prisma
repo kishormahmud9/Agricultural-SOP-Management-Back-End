@@ -234,15 +234,20 @@ enum SOPCategory {
   TRAINING
 }
 
+enum SOPSource {
+  PDF_UPLOAD
+  DIGITAL_EDITOR
+}
+
 model SOP {
   id String @id @default(uuid())
-
-  // Basic info
   title    String
   category SOPCategory  
 
+  source SOPSource @default(PDF_UPLOAD)
+
   // File info (for download)
-  fileUrl  String
+  fileUrl  String?
   fileName String?
   fileType String?       // pdf / docx
 

@@ -2,8 +2,23 @@ import express from "express";
 import { checkAuthMiddleware } from "../../../middleware/checkAuthMiddleware.js";
 import { Role } from "../../../utils/role.js";
 import { SOPController } from "./sop.controller.js";
+import { createMulterUpload } from "../../../config/multer.config.js";
 
 const router = express.Router();
+const uploadSOPMiddleware = createMulterUpload("sops");
+
+router.post(
+  "/upload",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  uploadSOPMiddleware.single("file"),
+  SOPController.uploadSOP,
+);
+
+router.post(
+  "/create",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  SOPController.createDigitalSOP,
+);
 
 router.get(
   "/:id/download",
