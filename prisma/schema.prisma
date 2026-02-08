@@ -227,20 +227,33 @@ model Task {
   @@index([scheduledAt])
 }
 
+enum SOPCategory {
+  SAFETY
+  OPERATIONS
+  COMPLIANCE
+  TRAINING
+}
+
 model SOP {
-  id     String @id @default(uuid())
-  title  String
-  module String
+  id String @id @default(uuid())
 
-  // PDF (download)
-  fileUrl String
+  // Basic info
+  title    String
+  category SOPCategory  
 
-  // AI output (read/view)
-  parsedContent Json? // 👈 AI agent writes here
+  // File info (for download)
+  fileUrl  String
+  fileName String?
+  fileType String?       // pdf / docx
+
+  // AI output
+  parsedContent Json?    // AI writes structured SOP here
   language      String?
 
+  // Status
   isActive Boolean @default(true)
 
+  // Farm scope
   farmId String
   farm   Farm   @relation(fields: [farmId], references: [id])
 
@@ -248,6 +261,7 @@ model SOP {
   updatedAt DateTime @updatedAt
 
   @@index([farmId])
+  @@index([category])
 }
 
 model Message {
