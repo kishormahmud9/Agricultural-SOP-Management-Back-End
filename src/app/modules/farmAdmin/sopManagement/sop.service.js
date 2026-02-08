@@ -1,15 +1,17 @@
 import prisma from "../../../prisma/client.js";
+import { AppError } from "../../../errorHelper/appError.js";
+import { SOPAIService } from "./sop.ai.service.js";
 
 const getAllSOPs = async (req) => {
   const { role, farmId } = req.user;
   const { category, search } = req.query;
 
   if (role !== "FARM_ADMIN") {
-    throw new Error("Access denied");
+    throw new AppError("Access denied", 403);
   }
 
   if (!farmId) {
-    throw new Error("Farm context missing");
+    throw new AppError("Farm context missing", 400);
   }
 
   const sops = await prisma.sOP.findMany({
@@ -42,11 +44,11 @@ const deleteSOP = async (req) => {
   const { id } = req.params;
 
   if (role !== "FARM_ADMIN") {
-    throw new Error("Access denied");
+    throw new AppError("Access denied", 403);
   }
 
   if (!farmId) {
-    throw new Error("Farm context missing");
+    throw new AppError("Farm context missing", 400);
   }
 
   await prisma.sOP.deleteMany({
@@ -64,11 +66,11 @@ const updateSOP = async (req) => {
   const { title, category } = req.body;
 
   if (role !== "FARM_ADMIN") {
-    throw new Error("Access denied");
+    throw new AppError("Access denied", 403);
   }
 
   if (!farmId) {
-    throw new Error("Farm context missing");
+    throw new AppError("Farm context missing", 400);
   }
 
   const result = await prisma.sOP.updateMany({
@@ -84,7 +86,7 @@ const updateSOP = async (req) => {
   });
 
   if (result.count === 0) {
-    throw new Error("SOP not found or access denied");
+    throw new AppError("SOP not found or access denied", 404);
   }
 
   return {
@@ -97,11 +99,11 @@ const downloadSOP = async (req) => {
   const { id } = req.params;
 
   if (role !== "FARM_ADMIN") {
-    throw new Error("Access denied");
+    throw new AppError("Access denied", 403);
   }
 
   if (!farmId) {
-    throw new Error("Farm context missing");
+    throw new AppError("Farm context missing", 400);
   }
 
   const sop = await prisma.sOP.findFirst({
@@ -109,10 +111,96 @@ const downloadSOP = async (req) => {
   });
 
   if (!sop) {
-    throw new Error("SOP not found");
+    throw new AppError("SOP not found", 404);
   }
 
-  return sop.fileUrl;
+  return sop;
+};
+
+const uploadSOP = async (req) => {
+  const { role, farmId } = req.user;
+  const { title, category } = req.body;
+
+  if (role !== "FARM_ADMIN") {
+    throw new AppError("Access denied", 403);
+  }
+
+  if (!farmId) {
+    throw new AppError("Farm context missing", 400);
+  }
+
+  if (!req.file) {
+    throw new AppError("SOP file is required", 400);
+  }
+
+  if (!title || !category) {
+    throw new AppError("Title and category are required", 400);
+  }
+
+  // 1️⃣ Save SOP FIRST (always)
+  const sop = await prisma.sOP.create({
+    data: {
+      title,
+      category,
+      fileUrl: `/uploads/sops/${req.file.filename}`,
+      fileName: req.file.originalname,
+      fileType: req.file.mimetype,
+      farmId,
+    },
+  });
+
+  // 2️⃣ Call AI (safe)
+  const aiResult = await SOPAIService.extractSOPFromAI(req.file.path);
+
+  // 3️⃣ Update SOP with AI data (if success)
+  if (aiResult) {
+    await prisma.sOP.update({
+      where: { id: sop.id },
+      data: {
+        parsedContent: aiResult,
+        language: aiResult.language || null,
+      },
+    });
+  }
+
+  return {
+    message: "SOP uploaded successfully",
+    sopId: sop.id,
+    aiProcessed: Boolean(aiResult),
+  };
+};
+
+const createDigitalSOP = async (req) => {
+  const { role, farmId } = req.user;
+  const { title, category, content } = req.body;
+
+  if (role !== "FARM_ADMIN") {
+    throw new AppError("Access denied", 403);
+  }
+
+  if (!farmId) {
+    throw new AppError("Farm context missing", 400);
+  }
+
+  if (!title || !category) {
+    throw new AppError("Title and category are required", 400);
+  }
+
+  if (!content || typeof content !== "object") {
+    throw new AppError("SOP content is required", 400);
+  }
+
+  const sop = await prisma.sOP.create({
+    data: {
+      title,
+      category,
+      source: "DIGITAL_EDITOR",
+      parsedContent: content,
+      farmId,
+    },
+  });
+
+  return sop;
 };
 
 export const SOPService = {
@@ -120,4 +208,6 @@ export const SOPService = {
   deleteSOP,
   downloadSOP,
   updateSOP,
+  uploadSOP,
+  createDigitalSOP,
 };

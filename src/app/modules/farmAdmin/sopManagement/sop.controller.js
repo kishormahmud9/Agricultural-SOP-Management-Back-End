@@ -1,6 +1,8 @@
 import { SOPService } from "./sop.service.js";
 import path from "path";
 import fs from "fs";
+import { AppError } from "../../../errorHelper/appError.js";
+import { sanitizeFileName } from "../../../utils/file.util.js";
 
 export class SOPController {
   static async getAllSOPs(req, res, next) {
@@ -41,32 +43,70 @@ export class SOPController {
 
   static async downloadSOP(req, res, next) {
     try {
-      const fileUrl = await SOPService.downloadSOP(req);
+      const sop = await SOPService.downloadSOP(req);
 
-      if (!fileUrl) {
-        return res.status(404).json({
-          success: false,
-          message: "SOP file not found",
-        });
+      if (!sop || !sop.fileUrl) {
+        throw new AppError("File not found", 404);
       }
 
-      // If the stored URL is already an absolute HTTP(S) URL, redirect directly
-      if (/^https?:\/\//i.test(fileUrl)) {
-        return res.redirect(fileUrl);
+      const relativePath = sop.fileUrl.replace(/^\/+/, "");
+      const filePath = path.resolve(process.cwd(), relativePath);
+
+      if (!fs.existsSync(filePath)) {
+        throw new AppError("File missing on server", 404);
       }
 
-      // Normalize local paths and prefer sending the file if it exists on disk
-      const possibleLocalPath = path.isAbsolute(fileUrl)
-        ? fileUrl
-        : path.join(process.cwd(), fileUrl);
+      const safeFileName = sanitizeFileName(
+        sop.fileName || path.basename(filePath),
+      );
 
-      if (fs.existsSync(possibleLocalPath)) {
-        return res.sendFile(possibleLocalPath);
-      }
+      // ✅ Correct MIME type for DOCX
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      );
 
-      // Otherwise, try redirecting to the public uploads route (app serves /uploads)
-      const publicPath = fileUrl.replace(/^\\+|^\/+/, "");
-      return res.redirect(`/${publicPath}`);
+      // ✅ SAFE Content-Disposition with quotes for filenames with spaces
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${safeFileName}"`,
+      );
+
+      const fileStream = fs.createReadStream(filePath);
+
+      fileStream.on("error", (err) => {
+        console.error("❌ Stream error:", err.message);
+        if (!res.headersSent) {
+          next(err);
+        }
+      });
+
+      fileStream.pipe(res);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async uploadSOP(req, res, next) {
+    try {
+      const result = await SOPService.uploadSOP(req);
+      res.status(201).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async createDigitalSOP(req, res, next) {
+    try {
+      const sop = await SOPService.createDigitalSOP(req);
+      res.status(201).json({
+        success: true,
+        message: "Digital SOP created successfully",
+        data: sop,
+      });
     } catch (error) {
       next(error);
     }
