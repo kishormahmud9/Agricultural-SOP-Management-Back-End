@@ -22,11 +22,14 @@ export const createMulterUpload = (folder = "others") => {
     });
 
     const fileFilter = (req, file, cb) => {
-        const allowedExt = /\.(pdf|doc|docx)$/i;
+        const allowedExt = /\.(pdf|doc|docx|jpg|jpeg|png|webp)$/i;
         const allowedMime = [
             "application/pdf",
             "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "image/jpeg",
+            "image/png",
+            "image/webp",
         ];
 
         const extOk = allowedExt.test(file.originalname);
@@ -37,7 +40,7 @@ export const createMulterUpload = (folder = "others") => {
         } else {
             cb(
                 new Error(
-                    "Only PDF, DOC, and DOCX files are allowed"
+                    "Only PDF, DOC, DOCX, and common image formats (JPG, PNG, WEBP) are allowed"
                 )
             );
         }

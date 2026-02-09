@@ -62,7 +62,7 @@ export const downloadSOP = async (req, res) => {
     if (!fileUrl) {
       return res.status(404).json({
         success: false,
-        message: "SOP file not found",
+        message: "SOP file URL not found in database",
       });
     }
 
@@ -71,24 +71,85 @@ export const downloadSOP = async (req, res) => {
       return res.redirect(fileUrl);
     }
 
-    // Normalize local paths and prefer sending the file if it exists on disk
-    const possibleLocalPath = path.isAbsolute(fileUrl)
-      ? fileUrl
-      : path.join(process.cwd(), fileUrl);
+    // Normalize local paths
+    const publicPath = fileUrl.replace(/^\\+|^\/+/, "");
+    const fullLocalPath = path.join(process.cwd(), publicPath);
 
-    if (fs.existsSync(possibleLocalPath)) {
-      return res.sendFile(possibleLocalPath);
+    if (fs.existsSync(fullLocalPath)) {
+      return res.download(fullLocalPath);
     }
 
-    // Otherwise, try redirecting to the public uploads route (app serves /uploads)
-    const publicPath = fileUrl.replace(/^\\+|^\/+/, "");
-    return res.redirect(`/${publicPath}`);
+    // Fallback: just return 404 if file is missing on disk
+    return res.status(404).json({
+      success: false,
+      message: "SOP file not found on server",
+    });
   } catch (error) {
     console.error("DOWNLOAD SOP ERROR:", error);
 
     return res.status(500).json({
       success: false,
       message: "Failed to download SOP",
+    });
+  }
+};
+
+export const readSOP = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sop = await SOPService.getReadFile({
+      id,
+      farmId: req.user.farmId,
+    });
+
+    if (!sop || !sop.fileUrl) {
+      return res.status(404).json({
+        success: false,
+        message: "SOP file not found",
+      });
+    }
+
+    // Only allow inline reading for PDFs
+    if (sop.fileType !== "pdf") {
+      return res.status(400).json({
+        success: false,
+        message: "Only PDF files can be read online",
+      });
+    }
+
+    // Remote file (S3 / CDN)
+    if (/^https?:\/\//i.test(sop.fileUrl)) {
+      return res.redirect(sop.fileUrl);
+    }
+
+    // Local file
+    const localPath = path.isAbsolute(sop.fileUrl)
+      ? sop.fileUrl
+      : path.join(process.cwd(), sop.fileUrl);
+
+    if (!fs.existsSync(localPath)) {
+      return res.status(404).json({
+        success: false,
+        message: "File missing on server",
+      });
+    }
+
+
+    const contentType = sop.fileType === "pdf" ? "application/pdf" : "application/octet-stream";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${sop.fileName || "sop.pdf"}"`
+    );
+
+    fs.createReadStream(localPath).pipe(res);
+  } catch (error) {
+    console.error("READ SOP ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to read SOP",
     });
   }
 };

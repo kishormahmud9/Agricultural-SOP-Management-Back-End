@@ -39,7 +39,41 @@ const updateLanguage = async (req, res) => {
     });
   }
 };
+
+const updateProfile = async (req, res) => {
+  try {
+    const { name } = req.body;
+    let avatarData = {};
+
+    if (req.file) {
+      avatarData = {
+        avatarUrl: `${req.protocol}://${req.get("host")}/uploads/profiles/${req.file.filename}`,
+        avatarUrlPath: req.file.path,
+      };
+    }
+
+    const result = await ProfileService.updateProfile(req.user.id, {
+      name,
+      ...avatarData,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("UPDATE_PROFILE_ERROR:", error.message);
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const ProfileController = {
   getProfile,
   updateLanguage,
+  updateProfile,
 };

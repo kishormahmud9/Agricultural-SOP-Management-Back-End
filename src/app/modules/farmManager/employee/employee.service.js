@@ -24,6 +24,9 @@ const getEmployees = async (farmId, query) => {
       email: true,
       status: true,
       createdAt: true,
+      avatarUrl: true,
+      jobTitle: true,
+      role: true,
     },
   });
 
@@ -49,7 +52,8 @@ const getEmployees = async (farmId, query) => {
     return {
       id: emp.id,
       name: emp.name,
-      role: "Farm Worker", // later from profile/field
+      avatarUrl: emp.avatarUrl,
+      role: emp.jobTitle || emp.role,
       email: emp.email,
       status: emp.status,
       joinedAt: emp.createdAt,
@@ -74,6 +78,8 @@ const getEmployeeDetails = async (farmId, employeeId) => {
       status: true,
       createdAt: true,
       jobTitle: true,
+      avatarUrl: true,
+      role: true,
     },
   });
 
@@ -99,7 +105,8 @@ const getEmployeeDetails = async (farmId, employeeId) => {
   return {
     id: employee.id,
     name: employee.name,
-    role: employee.jobTitle ?? "—",
+    avatarUrl: employee.avatarUrl,
+    role: employee.jobTitle || employee.role,
     email: employee.email,
     status: employee.status,
     joinedAt: employee.createdAt,

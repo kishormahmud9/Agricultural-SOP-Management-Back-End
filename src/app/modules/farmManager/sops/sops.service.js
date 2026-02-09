@@ -2,10 +2,13 @@ import prisma from "../../../prisma/client.js";
 
 export const getAll = async ({ farmId, module, search }) => {
   try {
+    const validCategories = ["SAFETY", "OPERATIONS", "COMPLIANCE", "TRAINING"];
+    const categoryFilter = module ? module.toUpperCase() : null;
+
     const sops = await prisma.sOP.findMany({
       where: {
         ...(farmId && { farmId }),
-        ...(module && { module }),
+        ...(categoryFilter && validCategories.includes(categoryFilter) && { category: categoryFilter }),
         ...(search && {
           title: {
             contains: search,
@@ -17,7 +20,7 @@ export const getAll = async ({ farmId, module, search }) => {
       select: {
         id: true,
         title: true,
-        module: true,
+        category: true,
         createdAt: true,
       },
       orderBy: { createdAt: "desc" },
@@ -26,7 +29,7 @@ export const getAll = async ({ farmId, module, search }) => {
     return sops.map((sop) => ({
       id: sop.id,
       title: sop.title,
-      module: sop.module,
+      module: sop.category,
       date: sop.createdAt.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -49,7 +52,7 @@ export const getById = async ({ id, farmId }) => {
       select: {
         id: true,
         title: true,
-        module: true,
+        category: true,
         fileUrl: true,
         parsedContent: true,
         createdAt: true,
@@ -61,7 +64,7 @@ export const getById = async ({ id, farmId }) => {
     return {
       id: sop.id,
       title: sop.title,
-      module: sop.module,
+      module: sop.category,
       uploadedAt: sop.createdAt.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -98,6 +101,28 @@ export const getDownloadUrl = async ({ id, farmId }) => {
     return sop?.fileUrl || null;
   } catch (error) {
     console.error("SOP DOWNLOAD SERVICE ERROR:", error);
+    throw error;
+  }
+};
+
+export const getReadFile = async ({ id, farmId }) => {
+  try {
+    const sop = await prisma.sOP.findFirst({
+      where: {
+        id,
+        farmId,
+        isActive: true,
+      },
+      select: {
+        fileUrl: true,
+        fileName: true,
+        fileType: true,
+      },
+    });
+
+    return sop || null;
+  } catch (error) {
+    console.error("SOP READ SERVICE ERROR:", error);
     throw error;
   }
 };

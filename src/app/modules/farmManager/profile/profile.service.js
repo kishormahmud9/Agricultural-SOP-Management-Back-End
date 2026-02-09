@@ -51,7 +51,40 @@ const updateLanguage = async (managerId, language) => {
   };
 };
 
+const updateProfile = async (managerId, data) => {
+  const { name, avatarUrl, avatarUrlPath } = data;
+
+  const updateData = {};
+  if (name) updateData.name = name;
+  if (avatarUrl) updateData.avatarUrl = avatarUrl;
+  if (avatarUrlPath) updateData.avatarUrlPath = avatarUrlPath;
+
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No data provided for update");
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: managerId },
+    data: updateData,
+    include: {
+      farm: {
+        select: { name: true, defaultLanguage: true },
+      },
+    },
+  });
+
+  return {
+    id: updated.id,
+    name: updated.name,
+    email: updated.email,
+    avatarUrl: updated.avatarUrl,
+    farmName: updated.farm?.name ?? "—",
+    language: updated.language ?? "English",
+  };
+};
+
 export const ProfileService = {
   getProfile,
   updateLanguage,
+  updateProfile,
 };
