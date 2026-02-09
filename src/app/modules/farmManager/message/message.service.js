@@ -16,6 +16,16 @@ const createMessage = async ({ content, senderId, receiverId, farmId }) => {
     throw new Error("Sender or receiver not found");
   }
 
+  // 0. Check if messaging is enabled for the farm
+  const farm = await prisma.farm.findUnique({
+    where: { id: farmId },
+    select: { isMessagingEnabled: true },
+  });
+
+  if (farm && !farm.isMessagingEnabled) {
+    throw new Error("Messaging is currently disabled for this farm");
+  }
+
   // Messaging path validation
   if (sender.role === Role.EMPLOYEE && receiver.role !== Role.MANAGER) {
     throw new Error("Employees can only message Farm Managers");

@@ -13,6 +13,7 @@ import { OversightRoutes } from "../modules/farmAdmin/oversight/oversight.routes
 import SubscriptionRoutes from "../modules/farmAdmin/subscription/subscription.routes.js";
 import FarmSettingsRoutes from "../modules/farmAdmin/settings/farmSettings.routes.js";
 import FarmAdminSOPRoutes from "../modules/farmAdmin/sopManagement/sop.routes.js";
+import { FarmAdminMessageRoutes } from "../modules/farmAdmin/message/message.route.js";
 
 import homeRoutes from "../modules/farmManager/home/home.route.js";
 import taskRoutes from "../modules/farmManager/task/task.route.js";
@@ -108,6 +109,11 @@ const moduleRoutes = [
   {
     path: "/farm-admin/sops",
     route: FarmAdminSOPRoutes,
+  },
+
+  {
+    path: "/farm-admin/messages",
+    route: FarmAdminMessageRoutes,
   },
 
   // FARM ADMIN ends here
