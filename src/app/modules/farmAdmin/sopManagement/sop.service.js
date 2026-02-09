@@ -1,6 +1,9 @@
+import path from "path";
+import fs from "fs";
 import prisma from "../../../prisma/client.js";
 import { AppError } from "../../../errorHelper/appError.js";
 import { SOPAIService } from "./sop.ai.service.js";
+import { sanitizeFileName } from "../../../utils/file.util.js";
 
 const getAllSOPs = async (req) => {
   const { role, farmId } = req.user;
@@ -98,7 +101,9 @@ const downloadSOP = async (req) => {
   const { role, farmId } = req.user;
   const { id } = req.params;
 
-  if (role !== "FARM_ADMIN") {
+  const allowedRoles = ["FARM_ADMIN", "MANAGER", "EMPLOYEE"];
+
+  if (!allowedRoles.includes(role)) {
     throw new AppError("Access denied", 403);
   }
 
@@ -107,7 +112,11 @@ const downloadSOP = async (req) => {
   }
 
   const sop = await prisma.sOP.findFirst({
-    where: { id, farmId, isActive: true },
+    where: {
+      id,
+      farmId,
+      isActive: true,
+    },
   });
 
   if (!sop) {
@@ -203,6 +212,47 @@ const createDigitalSOP = async (req) => {
   return sop;
 };
 
+const uploadPDFSOP = async (req) => {
+  const { title, category } = req.body;
+  const file = req.file;
+
+  if (!file) {
+    throw new AppError("PDF file is required", 400);
+  }
+
+  if (!title || !category) {
+    throw new AppError("Title and category are required", 400);
+  }
+
+  const farmId = req.user?.farmId;
+
+  if (!farmId) {
+    throw new AppError("Farm context missing", 403);
+  }
+
+  // multer already saved the file correctly
+  const relativeFilePath = path.join(
+    "uploads",
+    "sops",
+    path.basename(file.path)
+  );
+
+  const sop = await prisma.sOP.create({
+    data: {
+      title,
+      category,
+      source: "PDF_UPLOAD",
+      fileUrl: relativeFilePath,
+      fileName: file.originalname,
+      fileType: "pdf",
+      parsedContent: null,
+      farmId,
+    },
+  });
+
+  return sop;
+};
+
 export const SOPService = {
   getAllSOPs,
   deleteSOP,
@@ -210,4 +260,5 @@ export const SOPService = {
   updateSOP,
   uploadSOP,
   createDigitalSOP,
+  uploadPDFSOP,
 };
