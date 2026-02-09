@@ -90,7 +90,7 @@ const getAllTasks = async (employeeId, farmId) => {
 
 const getSopModules = async (farmId) => {
   const grouped = await prisma.sOP.groupBy({
-    by: ["module"],
+    by: ["category"],
     where: {
       farmId,
       isActive: true,
@@ -99,12 +99,12 @@ const getSopModules = async (farmId) => {
       _all: true,
     },
     orderBy: {
-      module: "asc",
+      category: "asc",
     },
   });
 
   return grouped.map((item) => ({
-    module: item.module,
+    module: item.category,
     count: item._count._all,
   }));
 };

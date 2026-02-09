@@ -5,7 +5,7 @@ import path from "path";
 // SOP Modules list
 const getSopModules = async (farmId) => {
   const grouped = await prisma.sOP.groupBy({
-    by: ["module"],
+    by: ["category"],
     where: {
       farmId,
       isActive: true,
@@ -14,22 +14,29 @@ const getSopModules = async (farmId) => {
       _all: true,
     },
     orderBy: {
-      module: "asc",
+      category: "asc",
     },
   });
 
   return grouped.map((item) => ({
-    module: item.module,
+    module: item.category,
     count: item._count._all,
   }));
 };
 
 // SOP list inside a module
 const getSopsByModule = async (farmId, module) => {
-  return prisma.sOP.findMany({
+  const validCategories = ["SAFETY", "OPERATIONS", "COMPLIANCE", "TRAINING", "FEEDING"];
+  const categoryFilter = module.toUpperCase();
+
+  if (!validCategories.includes(categoryFilter)) {
+    return []; // Return empty list instead of crashing if category is invalid
+  }
+
+  const sops = await prisma.sOP.findMany({
     where: {
       farmId,
-      module,
+      category: categoryFilter,
       isActive: true,
     },
     orderBy: {
@@ -42,6 +49,7 @@ const getSopsByModule = async (farmId, module) => {
       updatedAt: true,
     },
   });
+  return sops;
 };
 
 const getSopFile = async (sopId) => {
@@ -71,7 +79,7 @@ const viewSop = async (sopId) => {
     select: {
       id: true,
       title: true,
-      module: true,
+      category: true,
       parsedContent: true,
       language: true,
       updatedAt: true,
@@ -85,7 +93,7 @@ const viewSop = async (sopId) => {
   return {
     id: sop.id,
     title: sop.title,
-    module: sop.module,
+    module: sop.category,
     language: sop.language || "en",
     updatedAt: sop.updatedAt,
     isOfflineAvailable: true, // frontend logic can override

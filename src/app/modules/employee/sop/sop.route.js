@@ -27,7 +27,7 @@ router.get(
 
 // 👇 SOP LIST BY MODULE (KEEP LAST)
 router.get(
-  "/:module",
+  "/:module", 
   checkAuthMiddleware(Role.EMPLOYEE),
   SopController.getSopsByModule,
 );

@@ -232,6 +232,7 @@ enum SOPCategory {
   OPERATIONS
   COMPLIANCE
   TRAINING
+  FEEDING
 }
 
 enum SOPSource {
@@ -240,19 +241,19 @@ enum SOPSource {
 }
 
 model SOP {
-  id String @id @default(uuid())
+  id       String      @id @default(uuid())
   title    String
-  category SOPCategory  
+  category SOPCategory
 
   source SOPSource @default(PDF_UPLOAD)
 
   // File info (for download)
   fileUrl  String?
   fileName String?
-  fileType String?       // pdf / docx
+  fileType String? // pdf / docx
 
   // AI output
-  parsedContent Json?    // AI writes structured SOP here
+  parsedContent Json? // AI writes structured SOP here
   language      String?
 
   // Status

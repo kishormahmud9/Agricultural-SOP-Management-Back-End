@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "SOPCategory" ADD VALUE 'FEEDING';
