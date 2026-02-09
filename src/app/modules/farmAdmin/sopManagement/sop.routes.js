@@ -38,6 +38,13 @@ router.patch(
   SOPController.updateSOP,
 );
 
+router.post(
+  "/upload-pdf",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  uploadSOPMiddleware.single("file"),
+  SOPController.uploadPDFSOP,
+);
+
 router.get("/", checkAuthMiddleware(Role.FARM_ADMIN), SOPController.getAllSOPs);
 
 export default router;
