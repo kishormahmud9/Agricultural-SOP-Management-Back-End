@@ -1,8 +1,36 @@
 import prisma from "../../../prisma/client.js";
+import { Role } from "../../../utils/role.js";
 
 const createMessage = async ({ content, senderId, receiverId, farmId }) => {
   if (!content || !senderId || !receiverId || !farmId) {
     throw new Error("Missing required message fields");
+  }
+
+  // Fetch sender and receiver to check roles
+  const [sender, receiver] = await Promise.all([
+    prisma.user.findUnique({ where: { id: senderId } }),
+    prisma.user.findUnique({ where: { id: receiverId } }),
+  ]);
+
+  if (!sender || !receiver) {
+    throw new Error("Sender or receiver not found");
+  }
+
+  // Messaging path validation
+  if (sender.role === Role.EMPLOYEE && receiver.role !== Role.MANAGER) {
+    throw new Error("Employees can only message Farm Managers");
+  }
+
+  if (sender.role === Role.FARM_ADMIN && receiver.role !== Role.MANAGER) {
+    throw new Error("Farm Admins can only message Farm Managers");
+  }
+
+  if (
+    sender.role === Role.MANAGER &&
+    receiver.role !== Role.FARM_ADMIN &&
+    receiver.role !== Role.EMPLOYEE
+  ) {
+    throw new Error("Farm Managers can only message Farm Admins and Employees");
   }
 
   const message = await prisma.message.create({
@@ -54,7 +82,7 @@ const markMessagesAsRead = async ({ senderId, receiverId, farmId }) => {
   return unreadCount;
 };
 
-const getConversations = async ({ farmId, userId }) => {
+const getInbox = async ({ farmId, userId }) => {
   try {
     if (!farmId || !userId) {
       return [];
@@ -117,7 +145,31 @@ const getConversations = async ({ farmId, userId }) => {
       (a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt),
     );
   } catch (error) {
-    console.error("GET_CONVERSATIONS_SERVICE_ERROR:", error.message);
+    console.error("GET_INBOX_SERVICE_ERROR:", error.message);
+    return [];
+  }
+};
+
+const getContacts = async (farmId, currentUserId) => {
+  try {
+    const contacts = await prisma.user.findMany({
+      where: {
+        farmId,
+        id: { not: currentUserId },
+        role: { in: [Role.FARM_ADMIN, Role.EMPLOYEE] },
+      },
+      select: {
+        id: true,
+        name: true,
+        jobTitle: true,
+        role: true,
+        avatarUrl: true,
+      },
+    });
+
+    return contacts;
+  } catch (error) {
+    console.error("GET_CONTACTS_SERVICE_ERROR:", error.message);
     return [];
   }
 };
@@ -168,6 +220,7 @@ const getChatHistory = async ({ farmId, userId, partnerId }) => {
 export const MessageService = {
   createMessage,
   markMessagesAsRead,
-  getConversations,
+  getInbox,
+  getContacts,
   getChatHistory,
 };

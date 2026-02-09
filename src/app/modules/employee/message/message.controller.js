@@ -1,3 +1,4 @@
+import { MessageService as SharedMessageService } from "../../farmManager/message/message.service.js";
 import { MessageService } from "./message.service.js";
 
 const getInbox = async (req, res) => {
@@ -47,7 +48,34 @@ const getConversation = async (req, res) => {
   }
 };
 
+const sendMessage = async (req, res) => {
+  try {
+    const { content, receiverId } = req.body;
+    const { id: senderId, farmId } = req.user;
+
+    const message = await SharedMessageService.createMessage({
+      content,
+      senderId,
+      receiverId,
+      farmId,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: message,
+    });
+  } catch (error) {
+    console.error("SEND_MESSAGE_CONTROLLER_ERROR:", error.message);
+
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const MessageController = {
   getInbox,
   getConversation,
+  sendMessage,
 };

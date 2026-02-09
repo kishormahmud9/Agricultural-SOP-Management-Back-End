@@ -5,8 +5,28 @@ import { Role } from "../../../utils/role.js";
 
 const router = Router();
 
-router.get("/conversations", checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER), MessageController.getConversations);
+router.get(
+  "/",
+  checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
+  MessageController.getInbox,
+);
 
-router.get("/history", checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER), MessageController.getChatHistory);
+router.get(
+  "/contacts",
+  checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
+  MessageController.getContacts,
+);
+
+router.get(
+  "/history/:partnerId",
+  checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
+  MessageController.getChatHistory,
+);
+
+router.post(
+  "/",
+  checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
+  MessageController.sendMessage,
+);
 
 export default router;

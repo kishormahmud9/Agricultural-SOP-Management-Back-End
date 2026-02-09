@@ -14,4 +14,10 @@ router.get(
   MessageController.getConversation,
 );
 
+router.post(
+  "/send",
+  checkAuthMiddleware(Role.EMPLOYEE),
+  MessageController.sendMessage,
+);
+
 export default router;

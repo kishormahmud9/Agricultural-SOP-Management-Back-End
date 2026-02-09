@@ -2,39 +2,61 @@ import prisma from "../../../prisma/client.js";
 
 const getInbox = async (employeeId, farmId) => {
   try {
+    /**
+     * Fetch all messages where
+     * employee is sender OR receiver
+     */
     const messages = await prisma.message.findMany({
       where: {
-        receiverId: employeeId,
         farmId,
+        OR: [{ senderId: employeeId }, { receiverId: employeeId }],
       },
       orderBy: {
         createdAt: "desc",
       },
-      select: {
-        id: true,
-        content: true,
-        isRead: true,
-        createdAt: true,
-        senderId: true,
+      include: {
+        sender: {
+          select: { id: true, name: true, jobTitle: true },
+        },
+        receiver: {
+          select: { id: true, name: true, jobTitle: true },
+        },
       },
     });
 
-    const map = new Map();
+    /**
+     * Group by conversation partner
+     */
+    const conversationsMap = new Map();
 
     for (const msg of messages) {
-      if (!map.has(msg.senderId)) {
-        map.set(msg.senderId, {
-          senderId: msg.senderId,
+      const isSender = msg.senderId === employeeId;
+      const otherUser = isSender ? msg.receiver : msg.sender;
+
+      if (!otherUser) continue;
+
+      if (!conversationsMap.has(otherUser.id)) {
+        conversationsMap.set(otherUser.id, {
+          userId: otherUser.id,
+          name: otherUser.name,
+          jobTitle: otherUser.jobTitle ?? "—",
           lastMessage: msg.content,
-          isRead: msg.isRead,
-          createdAt: msg.createdAt,
+          lastMessageAt: msg.createdAt,
+          unreadCount: 0,
         });
+      }
+
+      // Count unread messages (where employee is receiver)
+      if (msg.receiverId === employeeId && msg.isRead === false) {
+        conversationsMap.get(otherUser.id).unreadCount += 1;
       }
     }
 
-    return Array.from(map.values());
+    return Array.from(conversationsMap.values()).sort(
+      (a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt),
+    );
   } catch (error) {
-    console.error("INBOX_SERVICE_ERROR:", error);
+    console.error("INBOX_SERVICE_ERROR:", error.message);
     return [];
   }
 };
