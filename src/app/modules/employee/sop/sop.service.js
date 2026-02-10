@@ -26,7 +26,14 @@ const getSopModules = async (farmId) => {
 
 // SOP list inside a module
 const getSopsByModule = async (farmId, module) => {
-  const validCategories = ["SAFETY", "OPERATIONS", "COMPLIANCE", "TRAINING", "FEEDING"];
+  const validCategories = [
+    "MILKING",
+    "FEEDING",
+    "HEALTH",
+    "CALVES",
+    "MAINTENANCE",
+    "EMERGENCIES",
+  ];
   const categoryFilter = module.toUpperCase();
 
   if (!validCategories.includes(categoryFilter)) {
