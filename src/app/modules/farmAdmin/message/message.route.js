@@ -24,6 +24,12 @@ router.get(
   MessageController.getOversightInbox,
 );
 
+router.get(
+  "/oversight/thread/:user1Id/:user2Id",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  MessageController.getThreadHistory,
+);
+
 router.patch(
   "/oversight/toggle",
   checkAuthMiddleware(Role.FARM_ADMIN),
@@ -43,6 +49,12 @@ router.delete(
 );
 
 // Admin Inbox & History (Admins can message Managers)
+router.get(
+  "/contacts",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  MessageController.getContacts,
+);
+
 router.get(
   "/inbox",
   checkAuthMiddleware(Role.FARM_ADMIN),

@@ -40,18 +40,18 @@ const getOversightMessages = async (farmId, query) => {
         farmId,
         ...(search
           ? {
-              OR: [
-                { content: { contains: search, mode: "insensitive" } },
-                {
-                  sender: { name: { contains: search, mode: "insensitive" } },
+            OR: [
+              { content: { contains: search, mode: "insensitive" } },
+              {
+                sender: { name: { contains: search, mode: "insensitive" } },
+              },
+              {
+                receiver: {
+                  name: { contains: search, mode: "insensitive" },
                 },
-                {
-                  receiver: {
-                    name: { contains: search, mode: "insensitive" },
-                  },
-                },
-              ],
-            }
+              },
+            ],
+          }
           : {}),
       },
       include: {
@@ -250,14 +250,14 @@ const getOversightInbox = async (farmId, query) => {
         farmId,
         ...(search
           ? {
-              OR: [
-                { content: { contains: search, mode: "insensitive" } },
-                { sender: { name: { contains: search, mode: "insensitive" } } },
-                {
-                  receiver: { name: { contains: search, mode: "insensitive" } },
-                },
-              ],
-            }
+            OR: [
+              { content: { contains: search, mode: "insensitive" } },
+              { sender: { name: { contains: search, mode: "insensitive" } } },
+              {
+                receiver: { name: { contains: search, mode: "insensitive" } },
+              },
+            ],
+          }
           : {}),
       },
       include: {
@@ -318,10 +318,43 @@ const getOversightInbox = async (farmId, query) => {
   }
 };
 
+const getThreadHistory = async (farmId, user1Id, user2Id) => {
+  try {
+    const messages = await prisma.message.findMany({
+      where: {
+        farmId,
+        OR: [
+          { senderId: user1Id, receiverId: user2Id },
+          { senderId: user2Id, receiverId: user1Id },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+      include: {
+        sender: {
+          select: { id: true, name: true, role: true },
+        },
+      },
+    });
+
+    return messages.map((m) => ({
+      id: m.id,
+      content: m.content,
+      senderId: m.senderId,
+      senderName: m.sender.name,
+      senderRole: m.sender.role,
+      createdAt: m.createdAt,
+    }));
+  } catch (error) {
+    console.error("GET_THREAD_HISTORY_ERROR:", error.message);
+    throw error;
+  }
+};
+
 export const MessageService = {
   getOversightStats,
   getOversightMessages,
   getOversightInbox,
+  getThreadHistory,
   toggleMessagingStatus,
   clearAllMessages,
   deleteMessage,

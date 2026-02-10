@@ -1,4 +1,23 @@
 import { MessageService } from "./message.service.js";
+import { MessageService as CoreMessageService } from "../../farmManager/message/message.service.js";
+
+const getContacts = async (req, res) => {
+  try {
+    const contacts = await CoreMessageService.getContacts(
+      req.user.farmId,
+      req.user.id,
+    );
+    return res.status(200).json({
+      success: true,
+      data: contacts,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 const getOversightStats = async (req, res) => {
   try {
@@ -172,10 +191,32 @@ const clearChatHistory = async (req, res) => {
   }
 };
 
+const getThreadHistory = async (req, res) => {
+  try {
+    const { user1Id, user2Id } = req.params;
+    const history = await MessageService.getThreadHistory(
+      req.user.farmId,
+      user1Id,
+      user2Id,
+    );
+    return res.status(200).json({
+      success: true,
+      data: history,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const MessageController = {
+  getContacts,
   getOversightStats,
   getOversightMessages,
   getOversightInbox,
+  getThreadHistory,
   toggleMessagingStatus,
   clearAllMessages,
   deleteMessage,

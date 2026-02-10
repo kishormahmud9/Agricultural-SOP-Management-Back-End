@@ -6,6 +6,11 @@ import { Role } from "../../../utils/role.js";
 const router = Router();
 
 router.get("/", checkAuthMiddleware(Role.EMPLOYEE), MessageController.getInbox);
+router.get(
+  "/contacts",
+  checkAuthMiddleware(Role.EMPLOYEE),
+  MessageController.getContacts,
+);
 
 // 👇 NEW (open chat screen)
 router.get(

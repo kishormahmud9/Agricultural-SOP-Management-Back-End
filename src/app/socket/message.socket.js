@@ -34,10 +34,31 @@ export const registerMessageSocket = (socket) => {
         farmId,
       });
 
+      // 🔥 Targeted Broadcasting for Privacy
       const io = getIO();
 
-      // 🔥 Emit message to all users in the farm (receiver will pick it)
-      io.to(`farm_${farmId}`).emit("new_message", {
+      // 1. Send to the receiver
+      io.to(`user_${receiverId}`).emit("new_message", {
+        id: message.id,
+        content: message.content,
+        sender: message.sender,
+        receiverId: message.receiverId,
+        createdAt: message.createdAt,
+        isRead: message.isRead,
+      });
+
+      // 2. Send back to the sender (for other tabs/devices)
+      io.to(`user_${senderId}`).emit("new_message", {
+        id: message.id,
+        content: message.content,
+        sender: message.sender,
+        receiverId: message.receiverId,
+        createdAt: message.createdAt,
+        isRead: message.isRead,
+      });
+
+      // 3. Send to Farm Admins (Real-time Oversight)
+      io.to(`farm_${farmId}_admins`).emit("new_message", {
         id: message.id,
         content: message.content,
         sender: message.sender,
@@ -80,7 +101,7 @@ export const registerMessageSocket = (socket) => {
       const io = getIO();
 
       // 🔔 Update unread count for receiver (real-time)
-      io.to(`farm_${farmId}`).emit("unread_update", {
+      io.to(`user_${receiverId}`).emit("unread_update", {
         userId: receiverId,
         unreadCount,
       });

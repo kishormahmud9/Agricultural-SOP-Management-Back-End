@@ -74,8 +74,23 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const getContacts = async (req, res, next) => {
+  try {
+    const { id: userId, farmId } = req.user;
+    const contacts = await SharedMessageService.getContacts(farmId, userId);
+
+    return res.status(200).json({
+      success: true,
+      data: contacts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const MessageController = {
   getInbox,
   getConversation,
   sendMessage,
+  getContacts,
 };

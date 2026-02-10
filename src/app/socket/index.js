@@ -11,26 +11,34 @@ export const initSocket = (httpServer) => {
     },
   });
 
-io.on("connection", (socket) => {
-  console.log("🔌 Socket connected:", socket.id);
+  io.on("connection", (socket) => {
+    console.log("🔌 Socket connected:", socket.id);
 
-  socket.on("join", ({ userId, farmId }) => {
-    if (!userId || !farmId) return;
+    socket.on("join", ({ userId, farmId, role }) => {
+      if (!userId || !farmId) return;
 
-    socket.join(`farm_${farmId}`);
-    socket.data.userId = userId;
-    socket.data.farmId = farmId;
+      socket.join(`farm_${farmId}`);
+      socket.join(`user_${userId}`);
 
-    console.log(`👤 User ${userId} joined farm_${farmId}`);
+      // Admins join a special room to oversee ALL messages in real-time
+      if (role === "FARM_ADMIN") {
+        socket.join(`farm_${farmId}_admins`);
+      }
+
+      socket.data.userId = userId;
+      socket.data.farmId = farmId;
+      socket.data.role = role;
+
+      console.log(`👤 User ${userId} joined farm_${farmId} (Room: user_${userId})`);
+    });
+
+    // 🔥 REGISTER MESSAGE EVENTS
+    registerMessageSocket(socket);
+
+    socket.on("disconnect", () => {
+      console.log("❌ Socket disconnected:", socket.id);
+    });
   });
-
-  // 🔥 REGISTER MESSAGE EVENTS
-  registerMessageSocket(socket);
-
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
-  });
-});
 
   return io;
 };

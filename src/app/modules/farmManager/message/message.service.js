@@ -162,11 +162,29 @@ const getInbox = async ({ farmId, userId }) => {
 
 const getContacts = async (farmId, currentUserId) => {
   try {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: currentUserId },
+      select: { role: true },
+    });
+
+    if (!currentUser) return [];
+
+    let roleFilter = [];
+    if (currentUser.role === Role.EMPLOYEE) {
+      roleFilter = [Role.MANAGER];
+    } else if (currentUser.role === Role.FARM_ADMIN) {
+      roleFilter = [Role.MANAGER];
+    } else if (currentUser.role === Role.MANAGER) {
+      roleFilter = [Role.FARM_ADMIN, Role.EMPLOYEE];
+    } else {
+      return []; // SYSTEM_OWNER etc.
+    }
+
     const contacts = await prisma.user.findMany({
       where: {
         farmId,
         id: { not: currentUserId },
-        role: { in: [Role.FARM_ADMIN, Role.EMPLOYEE] },
+        role: { in: roleFilter },
       },
       select: {
         id: true,
