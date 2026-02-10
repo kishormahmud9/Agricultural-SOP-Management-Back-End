@@ -118,18 +118,21 @@ const getEmployeeDetails = async (farmId, employeeId) => {
   };
 };
 
-const getEmployeeTasks = async (farmId, employeeId, type = "CURRENT") => {
-  const statusFilter =
-    type === "COMPLETED"
-      ? { status: "COMPLETED" }
-      : { status: { not: "COMPLETED" } };
+const getEmployeeTasks = async (farmId, employeeId, type) => {
+  const where = {
+    farmId,
+    assignedToId: employeeId,
+  };
+
+  // 🔸 Only filter if type is explicit
+  if (type === "CURRENT") {
+    where.status = { not: "COMPLETED" };
+  } else if (type === "COMPLETED") {
+    where.status = "COMPLETED";
+  }
 
   const tasks = await prisma.task.findMany({
-    where: {
-      farmId,
-      assignedToId: employeeId,
-      ...statusFilter,
-    },
+    where,
     orderBy: {
       scheduledAt: "asc",
     },
