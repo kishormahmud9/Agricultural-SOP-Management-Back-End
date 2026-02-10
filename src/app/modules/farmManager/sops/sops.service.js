@@ -2,13 +2,23 @@ import prisma from "../../../prisma/client.js";
 
 export const getAll = async ({ farmId, module, search }) => {
   try {
-    const validCategories = ["SAFETY", "OPERATIONS", "COMPLIANCE", "TRAINING"];
+    const validCategories = [
+      "MILKING",
+      "FEEDING",
+      "HEALTH",
+      "CALVES",
+      "MAINTENANCE",
+      "EMERGENCIES",
+    ];
     const categoryFilter = module ? module.toUpperCase() : null;
 
     const sops = await prisma.sOP.findMany({
       where: {
         ...(farmId && { farmId }),
-        ...(categoryFilter && validCategories.includes(categoryFilter) && { category: categoryFilter }),
+        ...(categoryFilter &&
+          validCategories.includes(categoryFilter) && {
+            category: categoryFilter,
+          }),
         ...(search && {
           title: {
             contains: search,

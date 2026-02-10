@@ -230,11 +230,12 @@ model Task {
 }
 
 enum SOPCategory {
-  SAFETY
-  OPERATIONS
-  COMPLIANCE
-  TRAINING
+  MILKING
   FEEDING
+  HEALTH
+  CALVES
+  MAINTENANCE
+  EMERGENCIES
 }
 
 enum SOPSource {

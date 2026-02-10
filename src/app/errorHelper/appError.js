@@ -1,5 +1,5 @@
 export class AppError extends Error {
-  constructor(statusCode, message, stack = "") {
+  constructor(message, statusCode, stack = "") {
     super(message);
 
     this.statusCode = statusCode;
@@ -12,5 +12,3 @@ export class AppError extends Error {
     }
   }
 }
-
-

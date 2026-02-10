@@ -124,41 +124,4 @@ export class SOPController {
       next(error);
     }
   }
-
-  static async downloadSOP(req, res, next) {
-    try {
-      const sop = await SOPService.downloadSOP(req);
-
-      if (!sop || !sop.fileUrl) {
-        throw new AppError("File not found", 404);
-      }
-
-      const filePath = path.join(process.cwd(), sop.fileUrl);
-
-      if (!fs.existsSync(filePath)) {
-        throw new AppError("File missing on server", 404);
-      }
-
-      const mimeMap = {
-        pdf: "application/pdf",
-        docx:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      };
-
-      res.setHeader(
-        "Content-Type",
-        mimeMap[sop.fileType] || "application/octet-stream"
-      );
-
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${sop.fileName}"`
-      );
-
-      fs.createReadStream(filePath).pipe(res);
-    } catch (error) {
-      next(error);
-    }
-  }
-
 }
