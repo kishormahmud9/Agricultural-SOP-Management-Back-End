@@ -1,105 +1,51 @@
-import * as SOPService from "./sops.service.js";
+import { SOPService } from "./sops.service.js";
 import path from "path";
 import fs from "fs";
 
-export const getSOPs = async (req, res) => {
+const getSopModules = async (req, res, next) => {
   try {
-    const { module, search } = req.query;
+    const { farmId } = req.user;
 
-    const sops = await SOPService.getAll({
-      farmId: req.user.farmId,
-      module,
-      search,
-    });
+    const result = await SOPService.getSopModules(farmId);
 
-    return res.json({
+    res.status(200).json({
       success: true,
-      data: sops,
+      data: result,
     });
   } catch (error) {
-    console.error("GET SOPs ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to load SOPs",
-    });
+    next(error);
   }
 };
 
-export const getSOPById = async (req, res) => {
+const getSopsByModule = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { farmId } = req.user;
+    const { module } = req.params;
 
-    const sop = await SOPService.getById({ id, farmId: req.user.farmId });
-
-    if (!sop) {
-      return res.status(404).json({
+    if (!module) {
+      return res.status(400).json({
         success: false,
-        message: "SOP not found",
+        message: "module is required",
       });
     }
 
-    return res.json({
+    const result = await SOPService.getSopsByModule(farmId, module);
+
+    res.status(200).json({
       success: true,
-      data: sop,
+      data: result,
     });
   } catch (error) {
-    console.error("GET SOP DETAILS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to load SOP details",
-    });
+    next(error);
   }
 };
 
-export const downloadSOP = async (req, res) => {
+const readSOP = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const fileUrl = await SOPService.getDownloadUrl({ id, farmId: req.user.farmId });
-
-    if (!fileUrl) {
-      return res.status(404).json({
-        success: false,
-        message: "SOP file URL not found in database",
-      });
-    }
-
-    // If the stored URL is already an absolute HTTP(S) URL, redirect directly
-    if (/^https?:\/\//i.test(fileUrl)) {
-      return res.redirect(fileUrl);
-    }
-
-    // Normalize local paths
-    const publicPath = fileUrl.replace(/^\\+|^\/+/, "");
-    const fullLocalPath = path.join(process.cwd(), publicPath);
-
-    if (fs.existsSync(fullLocalPath)) {
-      return res.download(fullLocalPath);
-    }
-
-    // Fallback: just return 404 if file is missing on disk
-    return res.status(404).json({
-      success: false,
-      message: "SOP file not found on server",
-    });
-  } catch (error) {
-    console.error("DOWNLOAD SOP ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to download SOP",
-    });
-  }
-};
-
-export const readSOP = async (req, res) => {
-  try {
-    const { id } = req.params;
+    const { sopId } = req.params;
 
     const sop = await SOPService.getReadFile({
-      id,
+      id: sopId,
       farmId: req.user.farmId,
     });
 
@@ -135,21 +81,65 @@ export const readSOP = async (req, res) => {
       });
     }
 
-
-    const contentType = sop.fileType === "pdf" ? "application/pdf" : "application/octet-stream";
+    const contentType =
+      sop.fileType === "pdf" ? "application/pdf" : "application/octet-stream";
     res.setHeader("Content-Type", contentType);
     res.setHeader(
       "Content-Disposition",
-      `inline; filename="${sop.fileName || "sop.pdf"}"`
+      `inline; filename="${sop.fileName || "sop.pdf"}"`,
     );
 
     fs.createReadStream(localPath).pipe(res);
   } catch (error) {
-    console.error("READ SOP ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to read SOP",
-    });
+    next(error);
   }
+};
+
+const downloadSop = async (req, res, next) => {
+  try {
+    const { sopId } = req.params;
+
+    const result = await SOPService.getSopFile(sopId);
+
+    // Tell browser/mobile app to download
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.fileName}"`,
+    );
+
+    res.setHeader("Content-Type", "application/pdf");
+
+    result.stream.pipe(res);
+  } catch (error) {
+    if (error.message === "SOP not found" || error.message === "SOP file not found in database") {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+const viewSop = async (req, res, next) => {
+  try {
+    const { sopId } = req.params;
+
+    const sop = await SOPService.viewSop(sopId);
+
+    res.status(200).json({
+      success: true,
+      data: sop,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const SOPController = {
+  getSopModules,
+  getSopsByModule,
+  downloadSop,
+  viewSop,
+  readSOP
 };

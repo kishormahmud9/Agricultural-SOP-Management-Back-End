@@ -1,121 +1,65 @@
 import prisma from "../../../prisma/client.js";
+import fs from "fs";
+import path from "path";
 
-export const getAll = async ({ farmId, module, search }) => {
-  try {
-    const validCategories = [
-      "MILKING",
-      "FEEDING",
-      "HEALTH",
-      "CALVES",
-      "MAINTENANCE",
-      "EMERGENCIES",
-    ];
-    const categoryFilter = module ? module.toUpperCase() : null;
+// SOP Modules list
+const getSopModules = async (farmId) => {
+  const grouped = await prisma.sOP.groupBy({
+    by: ["category"],
+    where: {
+      farmId,
+      isActive: true,
+    },
+    _count: {
+      _all: true,
+    },
+    orderBy: {
+      category: "asc",
+    },
+  });
 
-    const sops = await prisma.sOP.findMany({
-      where: {
-        ...(farmId && { farmId }),
-        ...(categoryFilter &&
-          validCategories.includes(categoryFilter) && {
-            category: categoryFilter,
-          }),
-        ...(search && {
-          title: {
-            contains: search,
-            mode: "insensitive",
-          },
-        }),
-        isActive: true,
-      },
-      select: {
-        id: true,
-        title: true,
-        category: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return sops.map((sop) => ({
-      id: sop.id,
-      title: sop.title,
-      module: sop.category,
-      date: sop.createdAt.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-    }));
-  } catch (error) {
-    console.error("🔥 SOP SERVICE ERROR:", error);
-    throw error;
-  }
+  return grouped.map((item) => ({
+    module: item.category,
+    count: item._count._all,
+  }));
 };
 
-export const getById = async ({ id, farmId }) => {
-  try {
-    const sop = await prisma.sOP.findFirst({
-      where: {
-        id,
-        farmId,
-        isActive: true,
-      },
-      select: {
-        id: true,
-        title: true,
-        category: true,
-        fileUrl: true,
-        parsedContent: true,
-        createdAt: true,
-      },
-    });
+// SOP list inside a module
+const getSopsByModule = async (farmId, module) => {
+  const validCategories = [
+    "MILKING",
+    "FEEDING",
+    "HEALTH",
+    "CALVES",
+    "MAINTENANCE",
+    "EMERGENCIES",
+  ];
+  const categoryFilter = module.toUpperCase();
 
-    if (!sop) return null;
-
-    return {
-      id: sop.id,
-      title: sop.title,
-      module: sop.category,
-      uploadedAt: sop.createdAt.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      uploadedBy: "Admin", // static for now
-      fileUrl: sop.fileUrl,
-      procedure: {
-        objective: sop.parsedContent?.objective || "",
-        scope: sop.parsedContent?.scope || "",
-        steps: sop.parsedContent?.steps || [],
-        importantNote: sop.parsedContent?.importantNote || "",
-      },
-    };
-  } catch (error) {
-    console.error("SOP DETAILS SERVICE ERROR:", error);
-    throw error;
+  if (!validCategories.includes(categoryFilter)) {
+    return []; // Return empty list instead of crashing if category is invalid
   }
+
+  const sops = await prisma.sOP.findMany({
+    where: {
+      farmId,
+      category: categoryFilter,
+      isActive: true,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    select: {
+      id: true,
+      title: true,
+      fileUrl: true,
+      updatedAt: true,
+    },
+  });
+  return sops;
 };
 
-export const getDownloadUrl = async ({ id, farmId }) => {
-  try {
-    const sop = await prisma.sOP.findFirst({
-      where: {
-        id,
-        farmId,
-        isActive: true,
-      },
-      select: {
-        fileUrl: true,
-      },
-    });
-
-    return sop?.fileUrl || null;
-  } catch (error) {
-    console.error("SOP DOWNLOAD SERVICE ERROR:", error);
-    throw error;
-  }
-};
-
-export const getReadFile = async ({ id, farmId }) => {
+const getReadFile = async ({ id, farmId }) => {
   try {
     const sop = await prisma.sOP.findFirst({
       where: {
@@ -135,4 +79,65 @@ export const getReadFile = async ({ id, farmId }) => {
     console.error("SOP READ SERVICE ERROR:", error);
     throw error;
   }
+};
+
+const getSopFile = async (sopId) => {
+  const sop = await prisma.sOP.findUnique({
+    where: { id: sopId },
+    select: {
+      fileUrl: true,
+      title: true,
+    },
+  });
+
+  if (!sop) {
+    throw new Error("SOP not found");
+  }
+
+  if (!sop.fileUrl) {
+    throw new Error("SOP file not found in database");
+  }
+
+  const filePath = path.resolve(sop.fileUrl);
+
+  return {
+    fileName: `${sop.title}.pdf`,
+    stream: fs.createReadStream(filePath),
+  };
+};
+
+const viewSop = async (sopId) => {
+  const sop = await prisma.sOP.findUnique({
+    where: { id: sopId },
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      parsedContent: true,
+      language: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!sop) {
+    throw new Error("SOP not found");
+  }
+
+  return {
+    id: sop.id,
+    title: sop.title,
+    module: sop.category,
+    language: sop.language || "en",
+    updatedAt: sop.updatedAt,
+    isOfflineAvailable: true, // frontend logic can override
+    content: sop.parsedContent, // 👈 THIS POWERS THE PAGE
+  };
+};
+
+export const SOPService = {
+  getSopModules,
+  getSopsByModule,
+  getSopFile,
+  viewSop,
+  getReadFile,
 };

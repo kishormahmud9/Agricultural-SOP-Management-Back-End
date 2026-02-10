@@ -72,6 +72,10 @@ const getSopFile = async (sopId) => {
     throw new Error("SOP not found");
   }
 
+  if (!sop.fileUrl) {
+    throw new Error("SOP file not found in database");
+  }
+
   const filePath = path.resolve(sop.fileUrl);
 
   return {
@@ -108,9 +112,32 @@ const viewSop = async (sopId) => {
   };
 };
 
+const getReadFile = async ({ id, farmId }) => {
+  try {
+    const sop = await prisma.sOP.findFirst({
+      where: {
+        id,
+        farmId,
+        isActive: true,
+      },
+      select: {
+        fileUrl: true,
+        fileName: true,
+        fileType: true,
+      },
+    });
+
+    return sop || null;
+  } catch (error) {
+    console.error("SOP READ SERVICE ERROR:", error);
+    throw error;
+  }
+};
+
 export const SopService = {
   getSopModules,
   getSopsByModule,
   getSopFile,
   viewSop,
+  getReadFile,
 };
