@@ -18,9 +18,6 @@ const getMyTasks = async (employeeId, type) => {
           gte: todayStart,
           lte: todayEnd,
         },
-        status: {
-          not: "COMPLETED",
-        },
       };
     }
 
@@ -178,6 +175,7 @@ const completeTask = async (taskId, employeeId, note) => {
       id: taskId,
       status: "COMPLETED",
       alreadyCompleted: false,
+      note: note || null,
     };
   } catch (error) {
     console.error("Task Completion Service Error:", error.message);

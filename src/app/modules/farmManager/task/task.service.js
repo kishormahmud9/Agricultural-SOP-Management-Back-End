@@ -38,24 +38,35 @@ const createTask = async ({
 const getTasks = async (farmId, query) => {
   const { status, search } = query;
 
-  return prisma.task.findMany({
+  const tasks = await prisma.task.findMany({
     where: {
       farmId,
       ...(status && status !== "ALL" ? { status } : {}),
       ...(search
         ? {
-            title: {
-              contains: search,
-              mode: "insensitive",
-            },
-          }
+          title: {
+            contains: search,
+            mode: "insensitive",
+          },
+        }
         : {}),
     },
     include: {
       assignedTo: { select: { name: true } },
+      completions: {
+        select: { note: true },
+        orderBy: { completedAt: "desc" },
+        take: 1,
+      },
     },
     orderBy: { scheduledAt: "asc" },
   });
+
+  return tasks.map((task) => ({
+    ...task,
+    note: task.completions[0]?.note || null,
+    completions: undefined,
+  }));
 };
 
 const updateTaskStatus = async (taskId, status) => {
