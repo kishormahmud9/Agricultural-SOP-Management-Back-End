@@ -17,6 +17,7 @@ router.post(
 router.post(
   "/create",
   checkAuthMiddleware(Role.FARM_ADMIN),
+  uploadSOPMiddleware.single("file"),
   SOPController.createDigitalSOP,
 );
 

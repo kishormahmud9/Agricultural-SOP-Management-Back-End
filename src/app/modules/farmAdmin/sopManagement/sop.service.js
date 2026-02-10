@@ -181,7 +181,8 @@ const uploadSOP = async (req) => {
 
 const createDigitalSOP = async (req) => {
   const { role, farmId } = req.user;
-  const { title, category, content } = req.body;
+  let { title, category, content } = req.body;
+  const file = req.file;
 
   if (role !== "FARM_ADMIN") {
     throw new AppError("Access denied", 403);
@@ -189,6 +190,15 @@ const createDigitalSOP = async (req) => {
 
   if (!farmId) {
     throw new AppError("Farm context missing", 400);
+  }
+
+  // Handle multipart/form-data JSON parsing for content if it's a string
+  if (typeof content === "string") {
+    try {
+      content = JSON.parse(content);
+    } catch (error) {
+      throw new AppError("Invalid JSON format for content", 400);
+    }
   }
 
   if (!title || !category) {
@@ -199,14 +209,23 @@ const createDigitalSOP = async (req) => {
     throw new AppError("SOP content is required", 400);
   }
 
+  const sopData = {
+    title,
+    category,
+    source: "DIGITAL_EDITOR",
+    parsedContent: content,
+    farmId,
+    isActive: true,
+  };
+
+  if (file) {
+    sopData.fileUrl = `/uploads/sops/${file.filename}`;
+    sopData.fileName = file.originalname;
+    sopData.fileType = path.extname(file.originalname).replace(".", "");
+  }
+
   const sop = await prisma.sOP.create({
-    data: {
-      title,
-      category,
-      source: "DIGITAL_EDITOR",
-      parsedContent: content,
-      farmId,
-    },
+    data: sopData,
   });
 
   return sop;
@@ -234,7 +253,7 @@ const uploadPDFSOP = async (req) => {
   const relativeFilePath = path.join(
     "uploads",
     "sops",
-    path.basename(file.path)
+    path.basename(file.path),
   );
 
   const sop = await prisma.sOP.create({
