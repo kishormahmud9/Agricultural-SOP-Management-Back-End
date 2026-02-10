@@ -1,9 +1,9 @@
 import prisma from "../../../prisma/client.js";
 import { Role } from "../../../utils/role.js";
 
-const createMessage = async ({ content, senderId, receiverId, farmId }) => {
-  if (!content || !senderId || !receiverId || !farmId) {
-    throw new Error("Missing required message fields");
+const createMessage = async ({ content, senderId, receiverId, farmId, imageUrl }) => {
+  if ((!content && !imageUrl) || !senderId || !receiverId || !farmId) {
+    throw new Error("Message must have content or image");
   }
 
   // Fetch sender and receiver to check roles
@@ -46,6 +46,7 @@ const createMessage = async ({ content, senderId, receiverId, farmId }) => {
   const message = await prisma.message.create({
     data: {
       content,
+      imageUrl,
       senderId,
       receiverId,
       farmId,

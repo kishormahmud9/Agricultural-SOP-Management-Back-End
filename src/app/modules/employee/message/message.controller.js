@@ -53,11 +53,17 @@ const sendMessage = async (req, res) => {
     const { content, receiverId } = req.body;
     const { id: senderId, farmId } = req.user;
 
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `/uploads/messages/${req.file.filename}`;
+    }
+
     const message = await SharedMessageService.createMessage({
       content,
       senderId,
       receiverId,
       farmId,
+      imageUrl,
     });
 
     return res.status(201).json({

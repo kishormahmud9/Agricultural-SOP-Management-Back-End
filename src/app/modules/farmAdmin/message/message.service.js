@@ -213,12 +213,13 @@ const getHistory = async (adminId, partnerId, farmId) => {
   }
 };
 
-const sendMessage = async ({ content, senderId, receiverId, farmId }) => {
+const sendMessage = async ({ content, senderId, receiverId, farmId, imageUrl }) => {
   return await CoreMessageService.createMessage({
     content,
     senderId,
     receiverId,
     farmId,
+    imageUrl,
   });
 };
 

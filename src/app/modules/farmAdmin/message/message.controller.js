@@ -153,11 +153,18 @@ const getOversightInbox = async (req, res) => {
 const sendMessage = async (req, res) => {
   try {
     const { content, receiverId } = req.body;
+
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = `/uploads/messages/${req.file.filename}`;
+    }
+
     const message = await MessageService.sendMessage({
       content,
       senderId: req.user.id,
       receiverId,
       farmId: req.user.farmId,
+      imageUrl,
     });
     return res.status(201).json({
       success: true,
