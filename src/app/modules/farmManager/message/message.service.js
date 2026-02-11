@@ -113,10 +113,10 @@ const getInbox = async ({ farmId, userId }) => {
       },
       include: {
         sender: {
-          select: { id: true, name: true, jobTitle: true },
+          select: { id: true, name: true, role: true },
         },
         receiver: {
-          select: { id: true, name: true, jobTitle: true },
+          select: { id: true, name: true, role: true },
         },
       },
     });
@@ -136,7 +136,7 @@ const getInbox = async ({ farmId, userId }) => {
         conversationsMap.set(otherUser.id, {
           userId: otherUser.id,
           name: otherUser.name,
-          jobTitle: otherUser.jobTitle ?? "—",
+          role: otherUser.role,
           lastMessage: msg.content,
           lastMessageAt: msg.createdAt,
           unreadCount: 0,
@@ -228,7 +228,7 @@ const getChatHistory = async ({ farmId, userId, partnerId }) => {
       },
       include: {
         sender: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, role: true },
         },
       },
     });
@@ -237,6 +237,9 @@ const getChatHistory = async ({ farmId, userId, partnerId }) => {
       id: msg.id,
       content: msg.content,
       imageUrl: msg.imageUrl,
+      sender: {
+        role: msg.sender.role,
+      },
       senderId: msg.senderId,
       isMine: msg.senderId === userId,
       createdAt: msg.createdAt,
