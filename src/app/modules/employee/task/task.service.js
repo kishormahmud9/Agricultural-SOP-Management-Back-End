@@ -54,6 +54,15 @@ const getMyTasks = async (employeeId, type) => {
         scheduledAt: true,
         shift: true,
         status: true,
+        completions: {
+          select: {
+            note: true,
+          },
+          orderBy: {
+            completedAt: "desc",
+          },
+          take: 1,
+        },
       },
     });
 
@@ -88,9 +97,20 @@ const getMyTasks = async (employeeId, type) => {
       };
     }
 
+    // Map tasks to include completionNote
+    const tasksWithNotes = tasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      scheduledAt: task.scheduledAt,
+      shift: task.shift,
+      status: task.status,
+      completionNote: task.completions?.[0]?.note || null,
+    }));
+
     return {
       progress,
-      tasks,
+      tasks: tasksWithNotes,
     };
   } catch (error) {
     console.error("Task Service Error:", error.message);
@@ -113,6 +133,15 @@ const getTaskDetails = async (taskId) => {
       scheduledAt: true,
       shift: true,
       status: true,
+      completions: {
+        select: {
+          note: true,
+        },
+        orderBy: {
+          completedAt: "desc",
+        },
+        take: 1,
+      },
     },
   });
 
@@ -128,6 +157,7 @@ const getTaskDetails = async (taskId) => {
     shift: task.shift,
     status: task.status,
     isCompleted: task.status === "COMPLETED",
+    completionNote: task.completions?.[0]?.note || null,
   };
 };
 
