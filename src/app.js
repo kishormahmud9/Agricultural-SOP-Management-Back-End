@@ -21,6 +21,7 @@ app.use(
   cors({
     origin: envVars.FRONT_END_URL, // Whitelist frontend URL from environment
     credentials: true, // Allow cookies and authorization headers
+    secure: false,
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 200, // Legacy browser support
