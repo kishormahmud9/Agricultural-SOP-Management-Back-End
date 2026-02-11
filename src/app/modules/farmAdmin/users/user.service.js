@@ -166,7 +166,8 @@ const createUser = async (farmId, payload) => {
             passwordHash,
             role,
             farmId,
-            status: "ACTIVE"
+            status: "ACTIVE",
+            isVerified: true,
         },
         select: {
             id: true,
