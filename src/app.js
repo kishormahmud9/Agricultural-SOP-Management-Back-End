@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./app/middleware/globalErrorHandeler.js";
 import { router } from "./app/router/index.js";
 import passport from "passport";
 import "./app/config/passport.config.js";
+import { envVars } from "./app/config/env.js";
 
 
 
@@ -16,7 +17,15 @@ dotenv.config();
 const app = express();
 
 // Global middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: envVars.FRONT_END_URL, // Whitelist frontend URL from environment
+    credentials: true, // Allow cookies and authorization headers
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200, // Legacy browser support
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
