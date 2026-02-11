@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { notFound } from "./app/middleware/notFound.js";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandeler.js";
 import { router } from "./app/router/index.js";
+import ProxyRoutes from "./app/modules/shared/proxy.routes.js";
 import passport from "passport";
 import "./app/config/passport.config.js";
 import { envVars } from "./app/config/env.js";
@@ -30,6 +31,9 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
+
+// Proxy routes for AI-generated static files (must be before /api)
+app.use(ProxyRoutes);
 
 // Routes
 app.use("/api", router);
