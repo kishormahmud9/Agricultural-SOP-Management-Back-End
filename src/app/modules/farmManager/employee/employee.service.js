@@ -53,6 +53,7 @@ const getEmployees = async (farmId, query) => {
       id: emp.id,
       name: emp.name,
       avatarUrl: emp.avatarUrl,
+      image: emp.avatarUrl,
       role: emp.jobTitle || emp.role,
       email: emp.email,
       status: emp.status,
