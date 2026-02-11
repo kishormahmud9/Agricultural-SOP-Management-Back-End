@@ -16,10 +16,10 @@ const getInbox = async (employeeId, farmId) => {
       },
       include: {
         sender: {
-          select: { id: true, name: true, jobTitle: true },
+          select: { id: true, name: true, role: true },
         },
         receiver: {
-          select: { id: true, name: true, jobTitle: true },
+          select: { id: true, name: true, role: true },
         },
       },
     });
@@ -39,7 +39,7 @@ const getInbox = async (employeeId, farmId) => {
         conversationsMap.set(otherUser.id, {
           userId: otherUser.id,
           name: otherUser.name,
-          jobTitle: otherUser.jobTitle ?? "—",
+          role: otherUser.role,
           lastMessage: msg.content,
           lastMessageAt: msg.createdAt,
           unreadCount: 0,
@@ -88,6 +88,11 @@ const getConversation = async ({ employeeId, otherUserId, farmId }) => {
         isRead: true,
         createdAt: true,
         imageUrl: true,
+        sender: {
+          select: {
+            role: true,
+          },
+        },
       },
     });
   } catch (error) {
