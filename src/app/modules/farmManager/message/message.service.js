@@ -236,6 +236,7 @@ const getChatHistory = async ({ farmId, userId, partnerId }) => {
     return messages.map((msg) => ({
       id: msg.id,
       content: msg.content,
+      imageUrl: msg.imageUrl,
       senderId: msg.senderId,
       isMine: msg.senderId === userId,
       createdAt: msg.createdAt,

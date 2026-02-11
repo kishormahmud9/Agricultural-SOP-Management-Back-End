@@ -87,6 +87,7 @@ const getConversation = async ({ employeeId, otherUserId, farmId }) => {
         receiverId: true,
         isRead: true,
         createdAt: true,
+        imageUrl: true,
       },
     });
   } catch (error) {

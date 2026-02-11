@@ -203,6 +203,7 @@ const getHistory = async (adminId, partnerId, farmId) => {
       select: {
         id: true,
         content: true,
+        imageUrl: true,
         senderId: true,
         createdAt: true,
       },
