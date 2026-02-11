@@ -1,4 +1,5 @@
 import { MessageService } from "./message.service.js";
+import { getIO } from "../../../socket/index.js";
 
 const getInbox = async (req, res) => {
   try {
@@ -86,6 +87,16 @@ const sendMessage = async (req, res) => {
       farmId,
       imageUrl,
     });
+
+    // Real-time notification
+    try {
+      const io = getIO();
+      if (io) {
+        io.to(`user_${receiverId}`).emit("new_message", message);
+      }
+    } catch (error) {
+      console.error("SOCKET_EMIT_ERROR:", error.message);
+    }
 
     return res.status(201).json({
       success: true,
