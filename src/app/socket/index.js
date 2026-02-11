@@ -1,12 +1,14 @@
 import { Server } from "socket.io";
 import { registerMessageSocket } from "./message.socket.js";
+import { envVars } from "../config/env.js";
 
 let io;
 
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: "*", // mobile app / frontend later restrict
+      origin: envVars.FRONT_END_URL, // Whitelist frontend URL from environment
+      credentials: true, // Allow authenticated socket connections
       methods: ["GET", "POST"],
     },
   });
