@@ -17,20 +17,24 @@ dotenv.config();
 
 const app = express();
 
-// Global middlewares
 app.use(
   cors({
-    origin: "*", // Whitelist frontend URL from environment
-    credentials: true, // Allow cookies and authorization headers
-    secure: true,
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    origin: [
+      "https://agricultural-sop-management.vercel.app",
+      "https://test16.fireai.agency"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 200, // Legacy browser support
   })
 );
+
+app.options("*", cors());
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
+
 
 // Proxy routes for AI-generated static files (must be before /api)
 app.use(ProxyRoutes);
