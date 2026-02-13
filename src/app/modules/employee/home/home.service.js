@@ -14,13 +14,26 @@ const getDashboard = async (employeeId, farmId) => {
       id: true,
       name: true,
       avatarUrl: true,
-      jobTitle: true,
+      role: true,
+      farm: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
   if (!employee) {
     throw new Error("Employee not found");
   }
+
+  const employeeInfo = {
+    id: employee.id,
+    name: employee.name,
+    avatarUrl: employee.avatarUrl,
+    role: employee.role,
+    farmName: employee.farm?.name || null,
+  };
 
   // Today's tasks count
   const todaysTasks = await prisma.task.count({
@@ -35,7 +48,7 @@ const getDashboard = async (employeeId, farmId) => {
   });
 
   // Recent completed tasks (activity)
-  const recentActivity = await prisma.task.findMany({
+  const completedTasks = await prisma.task.findMany({
     where: {
       assignedToId: employeeId,
       farmId,
@@ -55,8 +68,15 @@ const getDashboard = async (employeeId, farmId) => {
     },
   });
 
+  const recentActivity = completedTasks.map((task) => ({
+    id: task.id,
+    title: `${task.title} Completed`,
+    time: dayjs(task.completedAt).format("h:mm A"), // e.g., "6:00 AM"
+    completedAt: task.completedAt,
+  }));
+
   return {
-    employee,
+    employee: employeeInfo,
     stats: {
       todaysTasks,
     },

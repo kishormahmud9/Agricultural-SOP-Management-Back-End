@@ -16,4 +16,10 @@ router.post(
   FarmManagerAuthController.resetPassword,
 );
 
+router.post(
+  "/change-password",
+  checkAuthMiddleware(),
+  FarmManagerAuthController.changePassword,
+);
+
 export const FarmManagerAuthRoutes = router;

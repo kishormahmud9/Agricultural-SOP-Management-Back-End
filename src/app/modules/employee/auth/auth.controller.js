@@ -111,4 +111,31 @@ export const EmployeeAuthController = {
       next(error);
     }
   },
+
+  async changePassword(req, res, next) {
+    try {
+      const { id } = req.user; // From auth middleware
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return sendResponse(res, {
+          success: false,
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: "Current password and new password are required",
+          data: null,
+        });
+      }
+
+      await EmployeeAuthService.changePassword(id, currentPassword, newPassword);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Password changed successfully",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

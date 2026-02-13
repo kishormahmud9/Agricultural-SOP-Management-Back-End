@@ -16,4 +16,10 @@ router.post(
   EmployeeAuthController.resetPassword,
 );
 
+router.post(
+  "/change-password",
+  checkAuthMiddleware(),
+  EmployeeAuthController.changePassword,
+);
+
 export const EmployeeAuthRoutes = router;

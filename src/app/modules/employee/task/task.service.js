@@ -188,6 +188,7 @@ const completeTask = async (taskId, employeeId, note) => {
       where: { id: taskId },
       data: {
         status: "COMPLETED",
+        completedAt: new Date(),
         updatedAt: new Date(),
       },
     });

@@ -152,4 +152,67 @@ export const FarmManagerAuthService = {
 
     return true;
   },
+
+  async changePassword(userId, currentPassword, newPassword) {
+    // 1. Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new DevBuildError("User does not exist", StatusCodes.NOT_FOUND);
+    }
+
+    // 2. Verify user is FARM_ADMIN or MANAGER
+    if (user.role !== Role.FARM_ADMIN && user.role !== Role.MANAGER) {
+      throw new DevBuildError(
+        "This endpoint is only for Farm Managers",
+        StatusCodes.FORBIDDEN,
+      );
+    }
+
+    // 3. Check if user has a password set
+    if (!user.passwordHash) {
+      throw new DevBuildError(
+        "No password set. Please use social login or set a password first.",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
+    // 4. Verify current password
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
+
+    if (!isPasswordValid) {
+      throw new DevBuildError(
+        "Current password is incorrect",
+        StatusCodes.UNAUTHORIZED,
+      );
+    }
+
+    // 5. Check if new password is different from current
+    const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
+
+    if (isSamePassword) {
+      throw new DevBuildError(
+        "New password must be different from current password",
+        StatusCodes.BAD_REQUEST,
+      );
+    }
+
+    // 6. Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // 7. Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+      },
+    });
+
+    return true;
+  },
 };
