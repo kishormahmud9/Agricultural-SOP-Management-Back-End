@@ -21,7 +21,6 @@ app.use(
   cors({
     origin: [
       "https://agricultural-sop-management.vercel.app",
-      "https://test16.fireai.agency"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
