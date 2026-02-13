@@ -93,6 +93,7 @@ const viewSop = async (sopId) => {
       category: true,
       parsedContent: true,
       language: true,
+      fileUrl: true,
       updatedAt: true,
     },
   });
@@ -108,6 +109,7 @@ const viewSop = async (sopId) => {
     language: sop.language || "en",
     updatedAt: sop.updatedAt,
     isOfflineAvailable: true, // frontend logic can override
+    thumbnail: sop.fileUrl,
     content: sop.parsedContent, // 👈 THIS POWERS THE PAGE
   };
 };
