@@ -11,8 +11,6 @@ import passport from "passport";
 import "./app/config/passport.config.js";
 import { envVars } from "./app/config/env.js";
 
-
-
 dotenv.config();
 
 const app = express();
@@ -21,11 +19,12 @@ app.use(
   cors({
     origin: [
       "https://agricultural-sop-management.vercel.app",
+      "http://localhost:5173",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.options("*", cors());
@@ -33,7 +32,6 @@ app.options("*", cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(passport.initialize());
-
 
 // Proxy routes for AI-generated static files (must be before /api)
 app.use(ProxyRoutes);
@@ -54,5 +52,3 @@ app.use(notFound);
 app.use(globalErrorHandler);
 
 export default app;
-
-
