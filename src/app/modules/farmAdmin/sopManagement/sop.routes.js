@@ -49,4 +49,6 @@ router.post(
 
 router.get("/", checkAuthMiddleware(Role.FARM_ADMIN), SOPController.getAllSOPs);
 
+router.get("/:id", checkAuthMiddleware(Role.FARM_ADMIN), SOPController.getSOPById);
+
 export default router;

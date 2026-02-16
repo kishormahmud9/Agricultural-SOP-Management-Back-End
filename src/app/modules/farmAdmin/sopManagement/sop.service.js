@@ -272,8 +272,36 @@ const uploadPDFSOP = async (req) => {
   return sop;
 };
 
+const getSOPById = async (req) => {
+  const { role, farmId } = req.user;
+  const { id } = req.params;
+
+  if (role !== "FARM_ADMIN") {
+    throw new AppError("Access denied", 403);
+  }
+
+  if (!farmId) {
+    throw new AppError("Farm context missing", 400);
+  }
+
+  const sop = await prisma.sOP.findFirst({
+    where: {
+      id,
+      farmId,
+      isActive: true,
+    },
+  });
+
+  if (!sop) {
+    throw new AppError("SOP not found", 404);
+  }
+
+  return sop;
+};
+
 export const SOPService = {
   getAllSOPs,
+  getSOPById,
   deleteSOP,
   downloadSOP,
   updateSOP,

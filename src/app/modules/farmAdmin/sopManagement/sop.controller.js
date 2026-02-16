@@ -17,6 +17,18 @@ export class SOPController {
     }
   }
 
+  static async getSOPById(req, res, next) {
+    try {
+      const sop = await SOPService.getSOPById(req);
+      res.status(200).json({
+        success: true,
+        data: sop,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async deleteSOP(req, res, next) {
     try {
       const result = await SOPService.deleteSOP(req);
