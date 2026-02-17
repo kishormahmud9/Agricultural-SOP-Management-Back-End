@@ -37,6 +37,7 @@ router.delete(
 router.patch(
   "/:id",
   checkAuthMiddleware(Role.FARM_ADMIN),
+  uploadSOPMiddleware.single("file"),
   SOPController.updateSOP,
 );
 

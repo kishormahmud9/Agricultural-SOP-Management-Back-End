@@ -64,9 +64,15 @@ const deleteSOP = async (req) => {
 };
 
 const updateSOP = async (req) => {
+  console.log("--- Update SOP DEBUG ---");
+  console.log("Headers:", req.headers["content-type"]);
+  console.log("Body:", req.body);
+  console.log("File:", req.file ? req.file.originalname : "No file");
+
   const { role, farmId } = req.user;
   const { id } = req.params;
-  const { title, category } = req.body;
+  let { title, category, content } = req.body;
+  const file = req.file;
 
   if (role !== "FARM_ADMIN") {
     throw new AppError("Access denied", 403);
@@ -76,25 +82,65 @@ const updateSOP = async (req) => {
     throw new AppError("Farm context missing", 400);
   }
 
-  const result = await prisma.sOP.updateMany({
-    where: {
-      id,
-      farmId,
-      isActive: true,
-    },
-    data: {
-      ...(title && { title }),
-      ...(category && { category }),
-    },
+  // Handle multipart/form-data JSON parsing for content if it's a string
+  if (typeof content === "string") {
+    try {
+      content = JSON.parse(content);
+    } catch (error) {
+      throw new AppError("Invalid JSON format for content", 400);
+    }
+  }
+
+  const existingSOP = await prisma.sOP.findFirst({
+    where: { id, farmId, isActive: true },
   });
 
-  if (result.count === 0) {
+  if (!existingSOP) {
     throw new AppError("SOP not found or access denied", 404);
   }
 
-  return {
-    message: "SOP updated successfully",
-  };
+  const updateData = {};
+  if (title !== undefined) updateData.title = title;
+  if (category !== undefined) updateData.category = category;
+
+  if (content) {
+    updateData.parsedContent = content;
+    updateData.source = "DIGITAL_EDITOR";
+  }
+
+  if (file) {
+    updateData.fileUrl = `/uploads/sops/${file.filename}`;
+    updateData.fileName = file.originalname;
+    updateData.fileType = path.extname(file.originalname).replace(".", "");
+    if (!content) {
+      updateData.source = "PDF_UPLOAD";
+    }
+
+    // Delete old file if it exists
+    if (existingSOP.fileUrl) {
+      const oldFilePath = path.join(process.cwd(), existingSOP.fileUrl.replace(/^\/+/, ""));
+      if (fs.existsSync(oldFilePath)) {
+        try {
+          fs.unlinkSync(oldFilePath);
+        } catch (error) {
+          console.error(`Failed to delete old SOP file: ${oldFilePath}`, error);
+        }
+      }
+    }
+  }
+
+  const updatedSOP = await prisma.sOP.update({
+    where: { id },
+    data: updateData,
+  });
+
+  console.log("SOP Updated Successfully:", {
+    id: updatedSOP.id,
+    newTitle: updatedSOP.title,
+    newCategory: updatedSOP.category
+  });
+
+  return updatedSOP;
 };
 
 const downloadSOP = async (req) => {
