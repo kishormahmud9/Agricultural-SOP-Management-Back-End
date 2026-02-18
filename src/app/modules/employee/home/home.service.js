@@ -102,10 +102,28 @@ const getAllTasks = async (employeeId, farmId) => {
       scheduledAt: true,
       completedAt: true,
       shift: true,
+      completions: {
+        select: {
+          note: true,
+        },
+        orderBy: {
+          completedAt: "desc",
+        },
+        take: 1,
+      },
     },
   });
 
-  return tasks;
+  return tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    status: task.status,
+    scheduledAt: task.scheduledAt,
+    completedAt: task.completedAt,
+    shift: task.shift,
+    completionNote: task.completions?.[0]?.note || null,
+  }));
 };
 
 const getSopModules = async (farmId) => {
