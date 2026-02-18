@@ -11,17 +11,11 @@ router.get(
     SOPController.getSopModules,
 );
 
-// 👇 SOP TEXT VIEW PAGE
+// 👇 SOP DETAIL (JSON or PDF)
 router.get(
-    "/:sopId/view",
+    "/detail/:sopId",
     checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
-    SOPController.viewSop,
-);
-
-router.get(
-    "/:sopId/read",
-    checkAuthMiddleware(Role.FARM_ADMIN, Role.MANAGER),
-    SOPController.readSOP
+    SOPController.getSOPDetail,
 );
 
 // 👇 SOP PDF DOWNLOAD
