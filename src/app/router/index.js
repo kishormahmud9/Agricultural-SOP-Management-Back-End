@@ -14,6 +14,7 @@ import SubscriptionRoutes from "../modules/farmAdmin/subscription/subscription.r
 import FarmSettingsRoutes from "../modules/farmAdmin/settings/farmSettings.routes.js";
 import FarmAdminSOPRoutes from "../modules/farmAdmin/sopManagement/sop.routes.js";
 import { FarmAdminMessageRoutes } from "../modules/farmAdmin/message/message.route.js";
+import PaymentRoutes from "../modules/farmAdmin/payment/payment.route.js";
 
 import homeRoutes from "../modules/farmManager/home/home.route.js";
 import taskRoutes from "../modules/farmManager/task/task.route.js";
@@ -114,6 +115,11 @@ const moduleRoutes = [
   {
     path: "/farm-admin/messages",
     route: FarmAdminMessageRoutes,
+  },
+
+  {
+    path: "/farm-admin/payment",
+    route: PaymentRoutes,
   },
 
   // FARM ADMIN ends here

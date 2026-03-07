@@ -127,13 +127,15 @@ model Farm {
 }
 
 model Plan {
-  id            String  @id @default(uuid())
-  name          String  @unique
-  priceMonthly  Int
-  priceYearly   Int
-  employeeLimit Int
-  trialDays     Int
-  isActive      Boolean @default(true)
+  id                   String  @id @default(uuid())
+  name                 String  @unique
+  priceMonthly         Int
+  priceYearly          Int
+  stripeMonthlyPriceId String?
+  stripeYearlyPriceId  String?
+  employeeLimit        Int
+  trialDays            Int
+  isActive             Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

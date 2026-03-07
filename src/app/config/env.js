@@ -17,6 +17,8 @@ const loadEnvVars = () => {
     "REDIS_PORT",
     "REDIS_USERNAME",
     "REDIS_PASSWORD",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
   ];
 
   requiredVars.forEach((key) => {
@@ -58,6 +60,9 @@ const loadEnvVars = () => {
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
     // Frontend
     FRONT_END_URL: process.env.FRONT_END_URL,
+    // Stripe
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   };
 };
 

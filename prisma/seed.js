@@ -10,15 +10,25 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // -------------------------------
-  // 1️⃣ Create PLAN (Basic)
+  // 1️⃣ Create PLAN (Basic Plan)
   // -------------------------------
   const basicPlan = await prisma.plan.upsert({
-    where: { name: "Basic" },
-    update: {},
-    create: {
-      name: "Basic",
+    where: { name: "Basic Plan" },
+    update: {
       priceMonthly: 10,
       priceYearly: 100,
+      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
+      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
+      employeeLimit: 5,
+      trialDays: 7,
+      isActive: true
+    },
+    create: {
+      name: "Basic Plan",
+      priceMonthly: 50,
+      priceYearly: 600,
+      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
+      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 5,
       trialDays: 7,
       isActive: true

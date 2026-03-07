@@ -30,7 +30,13 @@ app.use(
 app.options("*", cors());
 
 app.use(cookieParser());
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  }),
+);
 app.use(passport.initialize());
 
 // Proxy routes for AI-generated static files (must be before /api)
