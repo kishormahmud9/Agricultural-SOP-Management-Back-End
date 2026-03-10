@@ -143,17 +143,16 @@ const createUser = async (farmId, payload) => {
         throw new Error("No active subscription found");
     }
 
-    const currentEmployeeCount = await prisma.user.count({
+    const currentUserCount = await prisma.user.count({
         where: {
             farmId,
-            role: "EMPLOYEE"
+            role: { in: ["EMPLOYEE", "MANAGER"] }
         }
     });
 
-    if (role === "EMPLOYEE" &&
-        subscription.plan.employeeLimit < 9999 &&
-        currentEmployeeCount >= subscription.plan.employeeLimit) {
-        throw new Error("Employee limit reached for current plan");
+    if (subscription.plan.employeeLimit < 9999 &&
+        currentUserCount >= subscription.plan.employeeLimit) {
+        throw new Error("User limit reached for current plan (includes Employees and Managers)");
     }
 
     // 🔐 Hash password

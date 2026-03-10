@@ -19,9 +19,9 @@ const getDashboardStats = async (farmId) => {
       unreadMessages,
       subscription
     ] = await Promise.all([
-      // 👥 Employees
+      // 👥 Total Users (Employees + Managers)
       prisma.user.count({
-        where: { farmId, role: "EMPLOYEE" }
+        where: { farmId, role: { in: ["EMPLOYEE", "MANAGER"] } }
       }),
       prisma.user.count({
         where: {
@@ -82,7 +82,7 @@ const getDashboardStats = async (farmId) => {
 
     return {
       stats: {
-        employees: {
+        users: {
           total: totalEmployees,
           addedThisMonth: employeesThisMonth
         },
@@ -105,8 +105,8 @@ const getDashboardStats = async (farmId) => {
             plan: subscription.plan.name,
             status: subscription.status,
             employeeLimit: subscription.plan.employeeLimit >= 9999 ? "Unlimited" : subscription.plan.employeeLimit,
-            currentEmployees: totalEmployees,
-            remainingEmployees:
+            currentUsers: totalEmployees,
+            remainingUsers:
               subscription.plan.employeeLimit >= 9999 
                 ? "Unlimited" 
                 : subscription.plan.employeeLimit - totalEmployees,
