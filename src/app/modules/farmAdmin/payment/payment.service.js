@@ -107,6 +107,7 @@ const handleWebhook = async (signature, rawBody) => {
           startDate,
           endDate,
           price,
+          priceType,
         },
         create: {
           farmId,
@@ -115,6 +116,7 @@ const handleWebhook = async (signature, rawBody) => {
           startDate,
           endDate,
           price,
+          priceType,
         },
       }),
       prisma.payment.create({

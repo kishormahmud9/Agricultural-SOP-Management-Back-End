@@ -35,6 +35,7 @@ export const FarmService = {
         users: farm.users.length,
         adminEmail: admin?.email || "N/A",
         plan: farm.subscription?.plan?.name || "N/A",
+        planDuration: farm.subscription?.priceType || "N/A",
         createdAt: farm.createdAt,
       };
     });
@@ -121,6 +122,7 @@ export const FarmService = {
       createdAt: farm.createdAt,
       totalUsers: farm.users.length,
       plan: farm.subscription?.plan?.name || "N/A",
+      planDuration: farm.subscription?.priceType || "N/A",
       employeeLimit: farm.subscription?.plan?.employeeLimit || 0,
     };
   },
