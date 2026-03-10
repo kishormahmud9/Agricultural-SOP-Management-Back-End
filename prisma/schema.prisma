@@ -134,7 +134,7 @@ model Plan {
   stripeMonthlyPriceId String?
   stripeYearlyPriceId  String?
   employeeLimit        Int
-  trialDays            Int
+  trialDays            Int?
   isActive             Boolean @default(true)
 
   createdAt DateTime @default(now())
