@@ -10,32 +10,77 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // -------------------------------
-  // 1️⃣ Create PLAN (Basic Plan)
+  // 1️⃣ Create PLANS
   // -------------------------------
+
   const basicPlan = await prisma.plan.upsert({
-    where: { name: "Basic Plan" },
+    where: { name: "Basic" },
     update: {
-      priceMonthly: 10,
-      priceYearly: 100,
+      priceMonthly: 20,
+      priceYearly: 240,
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
-      employeeLimit: 5,
-      trialDays: 7,
+      employeeLimit: 10,
       isActive: true
     },
     create: {
-      name: "Basic Plan",
-      priceMonthly: 50,
-      priceYearly: 600,
+      name: "Basic",
+      priceMonthly: 20,
+      priceYearly: 240,
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
-      employeeLimit: 5,
-      trialDays: 7,
+      employeeLimit: 10,
       isActive: true
     }
   });
 
-  console.log("✅ Plan created:", basicPlan.name);
+  const standardPlan = await prisma.plan.upsert({
+    where: { name: "Standard" },
+    update: {
+      priceMonthly: 30,
+      priceYearly: 360,
+      stripeMonthlyPriceId: "price_1T9CnOQ11TGqLUwmNQtR1AvA",
+      stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
+      employeeLimit: 25,
+      isActive: true
+    },
+    create: {
+      name: "Standard",
+      priceMonthly: 30,
+      priceYearly: 360,
+      stripeMonthlyPriceId: "price_1T9CnOQ11TGqLUwmNQtR1AvA",
+      stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
+      employeeLimit: 25,
+      isActive: true
+    }
+  });
+
+  const professionalPlan = await prisma.plan.upsert({
+    where: { name: "Professional" },
+    update: {
+      priceMonthly: 50,
+      priceYearly: 600,
+      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
+      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
+      employeeLimit: 9999,
+      isActive: true
+    },
+    create: {
+      name: "Professional",
+      priceMonthly: 50,
+      priceYearly: 600,
+      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
+      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
+      employeeLimit: 9999,
+      isActive: true
+    }
+  });
+
+  console.log("✅ Plans created:", [
+    basicPlan.name,
+    standardPlan.name,
+    professionalPlan.name
+  ]);
 
   // -------------------------------
   // 2️⃣ Create FARM
@@ -78,7 +123,7 @@ async function main() {
   // 5️⃣ Create USERS
   // -------------------------------
 
-  // SYSTEM OWNER (no farm)
+  // SYSTEM OWNER
   const systemOwner = await prisma.user.create({
     data: {
       name: "System Owner",
