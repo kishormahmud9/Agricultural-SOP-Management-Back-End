@@ -15,7 +15,11 @@ export const FarmService = {
             role: true,
           },
         },
-        subscription: true,
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
       },
     });
 
@@ -30,7 +34,7 @@ export const FarmService = {
         defaultLanguage: farm.defaultLanguage,
         users: farm.users.length,
         adminEmail: admin?.email || "N/A",
-        plan: farm.subscription?.plan || "N/A",
+        plan: farm.subscription?.plan?.name || "N/A",
         createdAt: farm.createdAt,
       };
     });
@@ -93,7 +97,11 @@ export const FarmService = {
       where: { id: farmId },
       include: {
         users: true,
-        subscription: true,
+        subscription: {
+          include: {
+            plan: true,
+          },
+        },
       },
     });
 
