@@ -1,8 +1,12 @@
 import prisma from "../../../prisma/client.js";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { AlertService } from "./alert.service.js";
 
 export const DashboardService = {
   async getDashboardData() {
+    // Generate/refresh alerts
+    await AlertService.generateDailyAlerts();
+
     const now = new Date();
 
     const [

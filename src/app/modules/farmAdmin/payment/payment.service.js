@@ -130,6 +130,23 @@ const handleWebhook = async (signature, rawBody) => {
         data: { status: "ACTIVE" },
       }),
     ]);
+  } else if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object;
+    const farmId = invoice.subscription_details?.metadata?.farmId || invoice.metadata?.farmId;
+
+    if (farmId) {
+      const farm = await prisma.farm.findUnique({
+        where: { id: farmId },
+      });
+
+      await prisma.systemAlert.create({
+        data: {
+          type: "PAYMENT_FAILED",
+          message: `Payment failed for farm "${farm?.name || "Unknown"}"`,
+          farmId: farmId,
+        },
+      });
+    }
   }
 
   return { received: true };
