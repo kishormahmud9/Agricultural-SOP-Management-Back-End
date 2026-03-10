@@ -39,6 +39,7 @@ const getCurrentSubscription = async (req) => {
         plan: subscription.plan.name,
         status: subscription.status,
         price: subscription.price,
+        planDuration: subscription.priceType,
         startDate: subscription.startDate,
         endDate: subscription.endDate,
         trialDays: subscription.plan.trialDays
