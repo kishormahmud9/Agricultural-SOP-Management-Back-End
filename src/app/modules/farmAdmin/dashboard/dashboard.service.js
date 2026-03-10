@@ -104,10 +104,12 @@ const getDashboardStats = async (farmId) => {
         ? {
             plan: subscription.plan.name,
             status: subscription.status,
-            employeeLimit: subscription.plan.employeeLimit,
+            employeeLimit: subscription.plan.employeeLimit >= 9999 ? "Unlimited" : subscription.plan.employeeLimit,
             currentEmployees: totalEmployees,
             remainingEmployees:
-              subscription.plan.employeeLimit - totalEmployees,
+              subscription.plan.employeeLimit >= 9999 
+                ? "Unlimited" 
+                : subscription.plan.employeeLimit - totalEmployees,
             nextBillingDate: subscription.endDate
           }
         : {

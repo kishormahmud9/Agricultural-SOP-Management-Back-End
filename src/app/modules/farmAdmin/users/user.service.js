@@ -151,6 +151,7 @@ const createUser = async (farmId, payload) => {
     });
 
     if (role === "EMPLOYEE" &&
+        subscription.plan.employeeLimit < 9999 &&
         currentEmployeeCount >= subscription.plan.employeeLimit) {
         throw new Error("Employee limit reached for current plan");
     }

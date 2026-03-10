@@ -112,8 +112,8 @@ export const FarmService = {
       language: farm.defaultLanguage,
       createdAt: farm.createdAt,
       totalUsers: farm.users.length,
-      plan: farm.subscription?.plan || "Basic",
-      employeeLimit: 50,
+      plan: farm.subscription?.plan?.name || "N/A",
+      employeeLimit: farm.subscription?.plan?.employeeLimit || 0,
     };
   },
 
