@@ -16,6 +16,7 @@ const getCurrentSubscription = async (req) => {
         include: {
             plan: {
                 select: {
+                    id: true,
                     name: true,
                     priceMonthly: true,
                     priceYearly: true,
@@ -34,6 +35,7 @@ const getCurrentSubscription = async (req) => {
     }
 
     return {
+        planId: subscription.planId,
         plan: subscription.plan.name,
         status: subscription.status,
         price: subscription.price,
