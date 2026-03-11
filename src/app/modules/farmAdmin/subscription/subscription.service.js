@@ -82,7 +82,11 @@ const getBillingHistory = async (req) => {
     return payments.map((payment) => ({
         billingDate: payment.paymentDate,
         amount: payment.amount,
-        status: payment.status === "SUCCESS" ? "Paid" : "Unpaid"
+        status: payment.status === "SUCCESS" ? "Paid" : "Unpaid",
+        planId: payment.planId,
+        planName: payment.planName,
+        priceType: payment.priceType,
+        endDate: payment.periodEnd
     }));
 };
 
