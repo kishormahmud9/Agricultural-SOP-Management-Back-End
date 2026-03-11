@@ -173,6 +173,12 @@ model Payment {
   status      PaymentStatus
   paymentDate DateTime
 
+  // Details at the time of purchase
+  planId    String?
+  planName  String?
+  priceType String? // monthly / yearly
+  periodEnd DateTime? // When this period ends
+
   createdAt DateTime @default(now())
 }
 

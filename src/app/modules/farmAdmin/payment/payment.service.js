@@ -133,8 +133,24 @@ const handleWebhook = async (signature, rawBody) => {
     const invoice = event.data.object;
     const farmId =
       invoice.subscription_details?.metadata?.farmId || invoice.metadata?.farmId;
+    const planId = 
+      invoice.subscription_details?.metadata?.planId || invoice.metadata?.planId;
+    const priceType = 
+      invoice.subscription_details?.metadata?.priceType || invoice.metadata?.priceType;
 
     if (farmId && invoice.amount_paid > 0) {
+      // Fetch plan name if planId is available
+      let planName = null;
+      if (planId) {
+        const plan = await prisma.plan.findUnique({ where: { id: planId } });
+        planName = plan?.name;
+      }
+
+      // Calculate period end (usually from the line items)
+      const periodEnd = invoice.lines?.data?.[0]?.period?.end 
+        ? new Date(invoice.lines.data[0].period.end * 1000) 
+        : null;
+
       await prisma.$transaction([
         prisma.subscription.update({
           where: { farmId },
@@ -146,6 +162,10 @@ const handleWebhook = async (signature, rawBody) => {
             amount: invoice.amount_paid / 100, // Stripe amount is in cents
             status: "SUCCESS",
             paymentDate: new Date(),
+            planId,
+            planName,
+            priceType,
+            periodEnd,
           },
         }),
       ]);
