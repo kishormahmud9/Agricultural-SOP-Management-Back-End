@@ -18,8 +18,8 @@ async function main() {
     update: {
       priceMonthly: 20,
       priceYearly: 240,
-      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
-      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
+      stripeMonthlyPriceId: "price_1T9CkpQ11TGqLUwmg8pCKrTf",
+      stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
       isActive: true
     },
@@ -27,8 +27,8 @@ async function main() {
       name: "Basic",
       priceMonthly: 20,
       priceYearly: 240,
-      stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
-      stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
+      stripeMonthlyPriceId: "price_1T9CkpQ11TGqLUwmg8pCKrTf",
+      stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
       isActive: true
     }
