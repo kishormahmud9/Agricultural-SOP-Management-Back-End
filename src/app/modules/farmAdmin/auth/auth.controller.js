@@ -2,6 +2,40 @@ import { StatusCodes } from "http-status-codes";
 import { FarmAdminAuthService } from "./auth.service.js";
 import { sendResponse } from "../../../utils/sendResponse.js";
 import { setAuthCookie } from "../../../utils/setCookie.js";
+import { OtpService } from "../../otp/otp.service.js";
+import prisma from "../../../prisma/client.js";
+
+const registerFarmAdmin = async (req, res, next) => {
+  try {
+    const result = await FarmAdminAuthService.registerFarmAdmin(req.body);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.CREATED,
+      message: "Farm Admin registered successfully. Please verify your email.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyRegistrationOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+
+    await OtpService.verifyOtp(prisma, email, otp);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Account verified successfully. You can now login.",
+      data: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const loginFarmAdmin = async (req, res, next) => {
   try {
@@ -29,6 +63,25 @@ const loginFarmAdmin = async (req, res, next) => {
 
 export const FarmAdminAuthController = {
   loginFarmAdmin,
+  registerFarmAdmin,
+  verifyRegistrationOtp,
+  async resendOtp(req, res, next) {
+    try {
+      const { email } = req.body;
+      if (!email) throw new DevBuildError("Email is required", StatusCodes.BAD_REQUEST);
+
+      await OtpService.sendOtp(prisma, email);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Verification OTP resent successfully",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 
   async forgotPassword(req, res, next) {
     try {
