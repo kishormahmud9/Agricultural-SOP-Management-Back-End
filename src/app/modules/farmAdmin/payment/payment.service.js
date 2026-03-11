@@ -50,6 +50,9 @@ const createCheckoutSession = async (user, payload) => {
       },
     ],
     mode: "subscription",
+    subscription_data: {
+      trial_period_days: plan.trialDays || 7,
+    },
     success_url: `${envVars.FRONT_END_URL}/dashboard?payment=success`,
     cancel_url: `${envVars.FRONT_END_URL}/dashboard?payment=cancel`,
     customer_email: user.email,
@@ -95,7 +98,9 @@ const handleWebhook = async (signature, rawBody) => {
 
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setDate(startDate.getDate() + durationDays);
+    const trialDays = plan.trialDays || 7;
+    // Add trial + the plan duration
+    endDate.setDate(startDate.getDate() + trialDays + durationDays);
 
     // Update or create subscription
     await prisma.$transaction([
@@ -103,7 +108,7 @@ const handleWebhook = async (signature, rawBody) => {
         where: { farmId: farmId },
         update: {
           planId: planId,
-          status: "ACTIVE",
+          status: "TRIAL",
           startDate,
           endDate,
           price,
@@ -112,19 +117,11 @@ const handleWebhook = async (signature, rawBody) => {
         create: {
           farmId,
           planId,
-          status: "ACTIVE",
+          status: "TRIAL",
           startDate,
           endDate,
           price,
           priceType,
-        },
-      }),
-      prisma.payment.create({
-        data: {
-          farmId,
-          amount: price,
-          status: "SUCCESS",
-          paymentDate: new Date(),
         },
       }),
       prisma.farm.update({
@@ -132,6 +129,27 @@ const handleWebhook = async (signature, rawBody) => {
         data: { status: "ACTIVE" },
       }),
     ]);
+  } else if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object;
+    const farmId =
+      invoice.subscription_details?.metadata?.farmId || invoice.metadata?.farmId;
+
+    if (farmId && invoice.amount_paid > 0) {
+      await prisma.$transaction([
+        prisma.subscription.update({
+          where: { farmId },
+          data: { status: "ACTIVE" },
+        }),
+        prisma.payment.create({
+          data: {
+            farmId,
+            amount: invoice.amount_paid / 100, // Stripe amount is in cents
+            status: "SUCCESS",
+            paymentDate: new Date(),
+          },
+        }),
+      ]);
+    }
   } else if (event.type === "invoice.payment_failed") {
     const invoice = event.data.object;
     const farmId = invoice.subscription_details?.metadata?.farmId || invoice.metadata?.farmId;
