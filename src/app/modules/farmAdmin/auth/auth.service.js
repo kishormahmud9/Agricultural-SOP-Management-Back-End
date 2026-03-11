@@ -35,7 +35,18 @@ const loginFarmAdmin = async (email, password) => {
     throw new DevBuildError("Invalid credentials", StatusCodes.UNAUTHORIZED);
   }
 
-  // 4. Generate tokens
+  // 4. Check if user is verified
+  if (!user.isVerified) {
+    // Send OTP again if not verified (proactive UX)
+    await OtpService.sendOtp(prisma, user.email, user.name);
+    
+    throw new DevBuildError(
+      "Your account is not verified. A new verification OTP has been sent to your email.",
+      StatusCodes.FORBIDDEN
+    );
+  }
+
+  // 5. Generate tokens
   const tokens = await createUserTokens(user);
 
   // 5. Return tokens and user info (excluding password)
@@ -214,5 +225,52 @@ export const FarmAdminAuthService = {
     });
 
     return true;
+  },
+
+  async registerFarmAdmin(payload) {
+    const { name, email, password, farmName, country, defaultLanguage } = payload;
+
+    // 1. Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new DevBuildError("User with this email already exists", StatusCodes.CONFLICT);
+    }
+
+    // 2. Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // 3. Create Farm and User in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create Farm
+      const farm = await tx.farm.create({
+        data: {
+          name: farmName,
+          country,
+          defaultLanguage: defaultLanguage || "English",
+        },
+      });
+
+      // Create User
+      const user = await tx.user.create({
+        data: {
+          name,
+          email,
+          passwordHash,
+          role: Role.FARM_ADMIN,
+          farmId: farm.id,
+          isVerified: false,
+        },
+      });
+
+      return { user, farm };
+    });
+
+    // 4. Send Verification OTP
+    await OtpService.sendOtp(prisma, email, name);
+
+    return result;
   },
 };
