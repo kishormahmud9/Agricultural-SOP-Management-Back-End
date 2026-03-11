@@ -51,7 +51,12 @@ const createCheckoutSession = async (user, payload) => {
     ],
     mode: "subscription",
     subscription_data: {
-      trial_period_days: plan.trialDays || 7,
+      ...(plan.trialDays > 0 && { trial_period_days: plan.trialDays }),
+      metadata: {
+        farmId: user.farmId,
+        planId: plan.id,
+        priceType,
+      },
     },
     success_url: `${envVars.FRONT_END_URL}/dashboard?payment=success`,
     cancel_url: `${envVars.FRONT_END_URL}/dashboard?payment=cancel`,
@@ -98,7 +103,7 @@ const handleWebhook = async (signature, rawBody) => {
 
     const startDate = new Date();
     const endDate = new Date();
-    const trialDays = plan.trialDays || 7;
+    const trialDays = plan.trialDays ?? 7;
     // Add trial + the plan duration
     endDate.setDate(startDate.getDate() + trialDays + durationDays);
 
@@ -108,35 +113,87 @@ const handleWebhook = async (signature, rawBody) => {
         where: { farmId: farmId },
         update: {
           planId: planId,
-          status: "TRIAL",
+          status: plan.trialDays > 0 ? "TRIAL" : "ACTIVE",
           startDate,
           endDate,
           price,
           priceType,
+          stripeSubscriptionId: session.subscription,
+          stripeCustomerId: session.customer,
         },
         create: {
           farmId,
           planId,
-          status: "TRIAL",
+          status: plan.trialDays > 0 ? "TRIAL" : "ACTIVE",
           startDate,
           endDate,
           price,
           priceType,
+          stripeSubscriptionId: session.subscription,
+          stripeCustomerId: session.customer,
         },
       }),
       prisma.farm.update({
         where: { id: farmId },
-        data: { status: "ACTIVE" },
+        data: { 
+          status: "ACTIVE",
+          stripeCustomerId: session.customer,
+        },
       }),
     ]);
   } else if (event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object;
-    const farmId =
-      invoice.subscription_details?.metadata?.farmId || invoice.metadata?.farmId;
-    const planId = 
-      invoice.subscription_details?.metadata?.planId || invoice.metadata?.planId;
-    const priceType = 
-      invoice.subscription_details?.metadata?.priceType || invoice.metadata?.priceType;
+    console.log(`🔔 invoice.payment_succeeded received: ${invoice.id}`);
+    
+    // Robust metadata extraction helper
+    const getMetadata = (invoice, field) => {
+      return (
+        invoice.subscription_details?.metadata?.[field] ||
+        invoice.metadata?.[field] ||
+        invoice.lines?.data?.[0]?.metadata?.[field]
+      );
+    };
+
+    let farmId = getMetadata(invoice, "farmId");
+    let planId = getMetadata(invoice, "planId");
+    let priceType = getMetadata(invoice, "priceType");
+
+    // Fallback 1: Fetch from Stripe Subscription API
+    if (!farmId && invoice.subscription) {
+      console.log(`🔍 Metadata missing on invoice, fetching from Stripe subscription: ${invoice.subscription}`);
+      try {
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        farmId = farmId || subscription.metadata?.farmId;
+        planId = planId || subscription.metadata?.planId;
+        priceType = priceType || subscription.metadata?.priceType;
+      } catch (err) {
+        console.error(`❌ Failed to retrieve sub from Stripe: ${err.message}`);
+      }
+    }
+
+    // Fallback 2: Search our DB by Stripe Subscription ID
+    if (!farmId && invoice.subscription) {
+      console.log(`🔍 Metadata missing, searching DB by stripeSubscriptionId: ${invoice.subscription}`);
+      const sub = await prisma.subscription.findUnique({
+        where: { stripeSubscriptionId: invoice.subscription }
+      });
+      if (sub) {
+        farmId = sub.farmId;
+        planId = planId || sub.planId;
+        priceType = priceType || sub.priceType;
+      }
+    }
+
+    // Fallback 3: Search our DB by Stripe Customer ID
+    if (!farmId && invoice.customer) {
+      console.log(`🔍 Metadata missing, searching DB by stripeCustomerId: ${invoice.customer}`);
+      const farm = await prisma.farm.findUnique({
+        where: { stripeCustomerId: invoice.customer }
+      });
+      if (farm) farmId = farm.id;
+    }
+
+    console.log(`📍 Webhook Result - Farm: ${farmId}, Plan: ${planId}, Amount: ${invoice.amount_paid}`);
 
     if (farmId && invoice.amount_paid > 0) {
       // Fetch plan name if planId is available
@@ -166,6 +223,8 @@ const handleWebhook = async (signature, rawBody) => {
             planName,
             priceType,
             periodEnd,
+            stripeInvoiceId: invoice.id,
+            invoicePdfUrl: invoice.invoice_pdf,
           },
         }),
       ]);

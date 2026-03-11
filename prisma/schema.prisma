@@ -114,6 +114,8 @@ model Farm {
 
   isMessagingEnabled Boolean @default(true)
 
+  stripeCustomerId String? @unique
+
   users        User[]
   subscription Subscription?
   payments     Payment[]
@@ -159,6 +161,9 @@ model Subscription {
   price     Int
   priceType String?
 
+  stripeSubscriptionId String? @unique
+  stripeCustomerId     String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -178,6 +183,9 @@ model Payment {
   planName  String?
   priceType String? // monthly / yearly
   periodEnd DateTime? // When this period ends
+
+  stripeInvoiceId String?
+  invoicePdfUrl   String?
 
   createdAt DateTime @default(now())
 }

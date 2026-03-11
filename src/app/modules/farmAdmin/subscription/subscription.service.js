@@ -86,7 +86,9 @@ const getBillingHistory = async (req) => {
         planId: payment.planId,
         planName: payment.planName,
         priceType: payment.priceType,
-        endDate: payment.periodEnd
+        endDate: payment.periodEnd,
+        stripeInvoiceId: payment.stripeInvoiceId,
+        invoicePdfUrl: payment.invoicePdfUrl,
     }));
 };
 
