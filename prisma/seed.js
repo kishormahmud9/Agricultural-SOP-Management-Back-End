@@ -21,6 +21,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T9CkpQ11TGqLUwmg8pCKrTf",
       stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
+      trialDays: 14,
       isActive: true
     },
     create: {
@@ -30,6 +31,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T9CkpQ11TGqLUwmg8pCKrTf",
       stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
+      trialDays: 14,
       isActive: true
     }
   });
@@ -42,6 +44,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T9CnOQ11TGqLUwmNQtR1AvA",
       stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
       employeeLimit: 25,
+      trialDays: 14,
       isActive: true
     },
     create: {
@@ -51,6 +54,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T9CnOQ11TGqLUwmNQtR1AvA",
       stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
       employeeLimit: 25,
+      trialDays: 14,
       isActive: true
     }
   });
@@ -63,6 +67,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 9999,
+      trialDays: 0,
       isActive: true
     },
     create: {
@@ -72,6 +77,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 9999,
+      trialDays: 0,
       isActive: true
     }
   });
@@ -85,8 +91,16 @@ async function main() {
   // -------------------------------
   // 2️⃣ Create FARM
   // -------------------------------
-  const farm = await prisma.farm.create({
-    data: {
+  const farm = await prisma.farm.upsert({
+    where: { id: "demo-farm-id" }, // Using a fixed ID for demo to make it idempotent
+    update: {
+      name: "Demo Farm",
+      country: "Bangladesh",
+      defaultLanguage: "en",
+      status: "ACTIVE"
+    },
+    create: {
+      id: "demo-farm-id",
       name: "Demo Farm",
       country: "Bangladesh",
       defaultLanguage: "en",
@@ -99,8 +113,18 @@ async function main() {
   // -------------------------------
   // 3️⃣ Create SUBSCRIPTION
   // -------------------------------
-  const subscription = await prisma.subscription.create({
-    data: {
+  const subscription = await prisma.subscription.upsert({
+    where: { farmId: farm.id },
+    update: {
+      planId: basicPlan.id,
+      status: "ACTIVE",
+      startDate: new Date(),
+      endDate: new Date(
+        new Date().setMonth(new Date().getMonth() + 1)
+      ),
+      price: basicPlan.priceMonthly
+    },
+    create: {
       farmId: farm.id,
       planId: basicPlan.id,
       status: "ACTIVE",
@@ -124,8 +148,16 @@ async function main() {
   // -------------------------------
 
   // SYSTEM OWNER
-  const systemOwner = await prisma.user.create({
-    data: {
+  const systemOwner = await prisma.user.upsert({
+    where: { email: "system@test.com" },
+    update: {
+      name: "System Owner",
+      passwordHash,
+      role: "SYSTEM_OWNER",
+      status: "ACTIVE",
+      isVerified: true
+    },
+    create: {
       name: "System Owner",
       email: "system@test.com",
       passwordHash,
@@ -136,8 +168,17 @@ async function main() {
   });
 
   // FARM ADMIN
-  const farmAdmin = await prisma.user.create({
-    data: {
+  const farmAdmin = await prisma.user.upsert({
+    where: { email: "farmadmin@test.com" },
+    update: {
+      name: "Farm Admin",
+      passwordHash,
+      role: "FARM_ADMIN",
+      status: "ACTIVE",
+      isVerified: true,
+      farmId: farm.id
+    },
+    create: {
       name: "Farm Admin",
       email: "farmadmin@test.com",
       passwordHash,
@@ -149,8 +190,17 @@ async function main() {
   });
 
   // MANAGER
-  const manager = await prisma.user.create({
-    data: {
+  const manager = await prisma.user.upsert({
+    where: { email: "manager@test.com" },
+    update: {
+      name: "Manager User",
+      passwordHash,
+      role: "MANAGER",
+      status: "ACTIVE",
+      isVerified: true,
+      farmId: farm.id
+    },
+    create: {
       name: "Manager User",
       email: "manager@test.com",
       passwordHash,
@@ -162,8 +212,17 @@ async function main() {
   });
 
   // EMPLOYEE
-  const employee = await prisma.user.create({
-    data: {
+  const employee = await prisma.user.upsert({
+    where: { email: "employee@test.com" },
+    update: {
+      name: "Employee User",
+      passwordHash,
+      role: "EMPLOYEE",
+      status: "ACTIVE",
+      isVerified: true,
+      farmId: farm.id
+    },
+    create: {
       name: "Employee User",
       email: "employee@test.com",
       passwordHash,
