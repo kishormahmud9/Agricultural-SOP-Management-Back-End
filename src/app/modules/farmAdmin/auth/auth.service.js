@@ -268,8 +268,8 @@ export const FarmAdminAuthService = {
       return { user, farm };
     });
 
-    // 4. Send Verification OTP
-    await OtpService.sendOtp(prisma, email, name);
+    // 4. Send Verification OTP (Removed: OTP will be sent when user hits resend-otp route)
+    // await OtpService.sendOtp(prisma, email, name);
 
     return result;
   },
