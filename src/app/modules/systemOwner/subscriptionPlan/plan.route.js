@@ -15,6 +15,11 @@ router.post(
 );
 
 router.get(
+  "/all",
+  PlanController.getPlans,
+);
+
+router.get(
   "/",
   checkAuthMiddleware(Role.SYSTEM_OWNER),
   PlanController.getPlans,
