@@ -106,8 +106,8 @@ model Farm {
   name   String
   status FarmStatus @default(ACTIVE)
 
-  country         String
-  defaultLanguage String
+  country         String?
+  defaultLanguage String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
