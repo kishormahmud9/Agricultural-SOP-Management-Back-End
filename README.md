@@ -1,95 +1,137 @@
-# Startup Template PostgreSQL Backend
+# 🌾 Agricultural SOP Management System (Backend)
 
-This is a robust startup template for a backend application using Node.js, Express, PostgreSQL, and Prisma. It includes essential features like authentication (OAuth & Email), OTP verification, and user management.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/framework-Express.js-blue)](https://expressjs.com/)
+[![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?logo=prisma)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/cache-Redis-DC382D?logo=redis)](https://redis.io/)
 
-## 🚀 Features
+A robust, enterprise-grade backend solution designed to manage **Standard Operating Procedures (SOPs)** in agricultural environments. This system empowers farm owners, managers, and employees with streamlined workflows, real-time oversight, and automated task management.
 
-- **Authentication**: Secure login/registration using `bcrypt` and `jsonwebtoken`.
-- **OAuth Integration**: Google Login support via `passport-google-oauth20`.
-- **OTP System**: Send and verify OTPs for email verification and password resets.
-- **User Management**: Profile management, user roles (System Owner, Business Owner, Staff, Customer), and details retrieval.
-- **Validation**: Request body and parameter validation using `Zod`.
-- **Database Architecture**: Managed by Prisma ORM with PostgreSQL.
-- **Error Handling**: Centralized error management system.
-- **Mailing**: Integration with `nodemailer` for automated emails with modern, responsive EJS templates.
-- **File Upload System**: Reusable Multer configuration supporting multiple categories (e.g., avatars) with automatic path handling and unique naming.
-- **Static Assets**: Dedicated structure for serving uploaded files (e.g., user avatars) statically.
-- **Security**: CORS, cookie-parser, and middleware-based authorization.
+---
 
-## 📦 Tech Stack & Packages
+## 🚀 Key Features
 
-### Core
-- **Framework**: `express`
-- **ORM**: `prisma`
-- **Database**: `postgresql` (via `pg`)
-- **Runtime**: Node.js (ES Modules)
+### 🔐 Multi-Role Authentication & Security
+- **Role-Based Access Control (RBAC)**: System Owner, Farm Admin, Farm Manager, and Employee.
+- **Secure Login**: JWT-based authentication with refresh token logic.
+- **OAuth Integration**: Google Login support for seamless onboarding.
+- **OTP Verification**: Email-based OTP for registration and password recovery.
 
-### Main Dependencies
-- **Auth**: `passport`, `passport-google-oauth20`, `passport-local`, `jsonwebtoken`, `bcrypt`
-- **Security**: `cors`, `cookie-parser`, `zod` (validation)
-- **Utilities**: `axios`, `date-fns`, `dotenv`, `multer` (file uploads), `nodemailer`
-- **Cache**: `redis`
+### 🚜 Farm Management & SOPs
+- **SOP Creation & Assignment**: Detailed Standard Operating Procedures management.
+- **Oversight Dashboard**: Real-time monitoring of farm activities and SOP compliance.
+- **Automated Scheduling**: Handling recurring agricultural tasks.
 
-## 🛠️ Installation
+### 💳 Subscription & Billing
+- **Payment Integration**: Secure transactions via **Stripe**.
+- **Subscription Plans**: Manage different tiers of access for farm admins.
+- **Billing History**: Automated invoice generation and payment tracking.
 
-1. **Clone the repository**:
+### 💬 Real-time Communication & Notifications
+- **Live Updates**: Socket.io integration for instant notifications and dashboard sync.
+- **Messaging System**: Internal messaging between farm roles.
+- **Email Alerts**: Responsive EJS templates for system-wide communications.
+
+### ⚙️ Infrastructure & Tech Stack
+- **ORM**: Prisma for type-safe database interactions.
+- **Performance**: Redis caching for optimized data retrieval.
+- **Validation**: Schema-based request validation using **Zod**.
+- **File System**: Multer-based multi-category file uploads (avatars, SOP documents).
+
+---
+
+## 🛠️ Tech Stack & Packages
+
+| Category | Technology |
+| :--- | :--- |
+| **Core** | Node.js (ESM), Express.js |
+| **Database** | PostgreSQL, Prisma ORM |
+| **Caching** | Redis |
+| **Real-time** | Socket.io |
+| **Payments** | Stripe |
+| **Auth** | Passport.js, JWT, Bcrypt |
+| **Email** | Nodemailer, EJS |
+| **Validation** | Zod |
+
+---
+
+## 📦 Project Structure
+
+```bash
+src/
+├── app/
+│   ├── config/         # App configuration (env, passport, etc.)
+│   ├── modules/        # Feature-based business logic
+│   │   ├── auth/       # Authentication (Login, Register, OAuth)
+│   │   ├── farmAdmin/  # Farm Admin dashboards & settings
+│   │   ├── employee/   # Employee tasks and profiles
+│   │   ├── sop/        # SOP management (Standard Operating Procedures)
+│   │   └── payment/    # Stripe integration & subscriptions
+│   ├── middleware/     # Auth, validation, and error middlewares
+│   ├── router/         # Centralized API routing
+│   ├── socket/         # Real-time event handlers
+│   └── utils/          # Helper functions & shared resources
+├── server.js           # Server initialization
+└── app.js              # Express application setup
+```
+
+---
+
+## ⚙️ Installation
+
+1. **Clone the Repository**
    ```bash
-   git clone <repository-url>
-   cd StartupTemplatePostgreSql
+   git clone https://github.com/kishormahmud9/Agricultural-SOP-Management-Back-End.git
+   cd Agricultural-SOP-Management-Back-End
    ```
 
-2. **Install dependencies**:
+2. **Install Dependencies**
    ```bash
    npm install
    ```
 
-3. **Set up Environment Variables**:
-   Create a `.env` file in the root directory and add your configurations (Database URL, JWT secret, OAuth credentials, etc.).
+3. **Environment Setup**
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5432/db_name"
+   REDIS_URL="redis://localhost:6379"
+   JWT_SECRET="your_secret_key"
+   STRIPE_SECRET_KEY="your_stripe_key"
+   # ... (see .env.example for full list)
+   ```
 
-4. **Prisma Setup**:
+4. **Database Migration**
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-5. **Run the application**:
-   - Development: `npm run dev`
-   - Production: `npm start`
+5. **Start the Server**
+   ```bash
+   # Development mode
+   npm run dev
 
-## 🛣️ API Routes & CRUD
-### BASE URL > http://localhost:8000/api/
-### Auth Module (`/api/auth`)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| POST | `/auth/login` | User login with credentials |
-| POST | `/auth/refresh-token` | Get a new access token |
-| POST | `/auth/logout` | Log out user and clear session |
-| POST | `/auth/forgot-password` | Initiate forgot password flow |
-| POST | `/auth/verify-forgot-password-otp` | Verify OTP for password reset |
-| POST | `/auth/reset-password` | Reset user password (Auth required) |
-| POST | `/auth/change-password` | Change user password (Auth required) | OldPassword - NewPassword Required
-| GET | `/auth/google` | Initiate Google OAuth login |
-| GET | `/auth/google/url` | Get the Google OAuth authorization URL |
-| GET | `/auth/google/callback` | Google OAuth callback URL |
-
-### User Module (`/api/user`)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| POST | `/user/register` | Register a new user (Supports optional avatar upload) |
-| GET | `/user/profile/me` | Get current logged-in user profile |
-| GET | `/user/user-details/:id` | Get specific user details by ID |
-| GET | `/user/all` | Get all users with profiles |
-| POST | `/user/update-user` | Update user information (Admin only) |
-| PATCH | `/user/update-profile` | Update current user profile (Auth required) |
-| PATCH | `/user/upload-avatar` | Upload or update user avatar (Auth required) |
-
-### OTP Module (`/api/otp`)
-| Method | Route | Description |
-| :--- | :--- | :--- |
-| POST | `/otp/send` | Send OTP to user email |
-| POST | `/otp/verify` | Verify the sent OTP |
+   # Production mode
+   npm start
+   ```
 
 ---
 
-## Postman Collection > [POSTMAN]StratupTemplate.postman.json
-*Created with ❤️ for rapid development.* ©️ Ahanaf Mubasshir
+## 📜 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contact & Support
+
+Developed with ❤️ by **FireAI Agency**
+
+- **Author**: **Kishor Mahmud / MD. Nowazesh Kobir Rifat**
+- **Organization**: FireAI Agency
+- **GitHub**: [@kishormahmud9](https://github.com/kishormahmud9) / [@NKRifat47](https://github.com/NKRifat47)
+
+---
+*Created for modern agriculture management.* ©️ 2026 FireAI Agency
