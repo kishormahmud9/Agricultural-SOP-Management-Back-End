@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import { AppError } from "../../../errorHelper/appError.js";
 import { sanitizeFileName } from "../../../utils/file.util.js";
+import { generateSOPPdf } from "./sop.pdf.util.js";
 
 export class SOPController {
   static async getAllSOPs(req, res, next) {
@@ -57,43 +58,81 @@ export class SOPController {
     try {
       const sop = await SOPService.downloadSOP(req);
 
-      if (!sop || !sop.fileUrl) {
-        throw new AppError("File not found", 404);
+      if (!sop) {
+        throw new AppError("SOP not found", 404);
       }
 
-      const relativePath = sop.fileUrl.replace(/^\/+/, "");
-      const filePath = path.resolve(process.cwd(), relativePath);
+      // ── Case 1: SOP has a physical file → stream it ──
+      if (sop.fileUrl) {
+        const relativePath = sop.fileUrl.replace(/^\/+/, "");
+        const filePath = path.resolve(process.cwd(), relativePath);
 
-      if (!fs.existsSync(filePath)) {
-        throw new AppError("File missing on server", 404);
-      }
-
-      const safeFileName = sanitizeFileName(
-        sop.fileName || path.basename(filePath),
-      );
-
-      // ✅ Correct MIME type for DOCX
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      );
-
-      // ✅ SAFE Content-Disposition with quotes for filenames with spaces
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${safeFileName}"`,
-      );
-
-      const fileStream = fs.createReadStream(filePath);
-
-      fileStream.on("error", (err) => {
-        console.error("❌ Stream error:", err.message);
-        if (!res.headersSent) {
-          next(err);
+        if (!fs.existsSync(filePath)) {
+          throw new AppError("File missing on server", 404);
         }
-      });
 
-      fileStream.pipe(res);
+        const safeFileName = sanitizeFileName(
+          sop.fileName || path.basename(filePath),
+        );
+
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+          ".pdf": "application/pdf",
+          ".docx":
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ".doc": "application/msword",
+        };
+
+        res.setHeader(
+          "Content-Type",
+          mimeTypes[ext] || "application/octet-stream",
+        );
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${safeFileName}"`,
+        );
+
+        const fileStream = fs.createReadStream(filePath);
+
+        fileStream.on("error", (err) => {
+          console.error("❌ Stream error:", err.message);
+          if (!res.headersSent) {
+            next(err);
+          }
+        });
+
+        fileStream.pipe(res);
+        return;
+      }
+
+      // ── Case 2: Content-only SOP → generate PDF on-the-fly ──
+      if (sop.parsedContent) {
+        const safeFileName = sanitizeFileName(sop.title || "SOP") + ".pdf";
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${safeFileName}"`,
+        );
+
+        const pdfStream = generateSOPPdf(sop);
+
+        pdfStream.on("error", (err) => {
+          console.error("❌ PDF generation error:", err.message);
+          if (!res.headersSent) {
+            next(err);
+          }
+        });
+
+        pdfStream.pipe(res);
+        return;
+      }
+
+      // ── No file and no content ──
+      throw new AppError(
+        "This SOP has no downloadable file or content",
+        404,
+      );
     } catch (error) {
       next(error);
     }
