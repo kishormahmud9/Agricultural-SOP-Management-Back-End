@@ -20,6 +20,7 @@ const createPlanSchema = z.object({
     employeeLimit: z.number({
       required_error: "Employee limit is required",
     }),
+    features: z.array(z.string()).optional(),
     // trialDays: z.number().optional(), // Commented for now
     isActive: z.boolean().optional(),
   }),
@@ -33,6 +34,7 @@ const updatePlanSchema = z.object({
     stripeMonthlyPriceId: z.string().optional(),
     stripeYearlyPriceId: z.string().optional(),
     employeeLimit: z.number().optional(),
+    features: z.array(z.string()).optional(),
     // trialDays: z.number().optional(), // Commented for now
     isActive: z.boolean().optional(),
   }),
