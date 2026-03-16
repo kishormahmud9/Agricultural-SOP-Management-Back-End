@@ -251,18 +251,22 @@ const createDigitalSOP = async (req) => {
     throw new AppError("Title and category are required", 400);
   }
 
-  if (!content || typeof content !== "object") {
-    throw new AppError("SOP content is required", 400);
+  // Either content or file must be provided
+  if ((!content || typeof content !== "object") && !file) {
+    throw new AppError("Either SOP content or a PDF file is required", 400);
   }
 
   const sopData = {
     title,
     category,
-    source: "DIGITAL_EDITOR",
-    parsedContent: content,
+    source: content ? "DIGITAL_EDITOR" : "PDF_UPLOAD",
     farmId,
     isActive: true,
   };
+
+  if (content && typeof content === "object") {
+    sopData.parsedContent = content;
+  }
 
   if (file) {
     sopData.fileUrl = `/uploads/sops/${file.filename}`;
