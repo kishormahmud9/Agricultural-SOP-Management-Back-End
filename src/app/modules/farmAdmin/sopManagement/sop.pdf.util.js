@@ -2,6 +2,15 @@ import PDFDocument from "pdfkit";
 
 /**
  * Generates a PDF document stream from SOP data.
+ *
+ * Supports content as an ordered array format:
+ * [
+ *   { "title": "Section Name", "text": "Section content" },
+ *   { "title": "Another Section", "text": "More content" }
+ * ]
+ *
+ * Also supports legacy object format for backward compatibility.
+ *
  * @param {object} sop - The SOP record with title, category, parsedContent
  * @returns {PDFDocument} - A readable stream of the generated PDF
  */
@@ -53,7 +62,13 @@ export function generateSOPPdf(sop) {
   const content = sop.parsedContent;
 
   if (content) {
-    renderContent(doc, content);
+    if (Array.isArray(content)) {
+      renderArrayContent(doc, content);
+    } else if (typeof content === "object") {
+      renderObjectContent(doc, content);
+    } else {
+      doc.fontSize(11).font("Helvetica").text(String(content));
+    }
   } else {
     doc.fontSize(12).font("Helvetica").text("No content available.");
   }
@@ -63,47 +78,73 @@ export function generateSOPPdf(sop) {
 }
 
 /**
- * Recursively renders JSON content into the PDF.
+ * Renders array-based content (preserves order).
+ * Expected format: [{ title: "...", text: "..." }, ...]
  */
-function renderContent(doc, data, depth = 0) {
-  if (typeof data === "string") {
-    doc
-      .fontSize(11)
-      .font("Helvetica")
-      .text(data, { indent: depth * 15 });
-    doc.moveDown(0.3);
-    return;
-  }
+function renderArrayContent(doc, items) {
+  items.forEach((item, index) => {
+    if (typeof item === "object" && item !== null) {
+      // Section heading
+      if (item.title) {
+        doc
+          .fontSize(15)
+          .font("Helvetica-Bold")
+          .text(item.title);
+        doc.moveDown(0.2);
+      }
 
-  if (Array.isArray(data)) {
-    data.forEach((item, index) => {
-      if (typeof item === "string") {
+      // Section body
+      if (item.text) {
         doc
           .fontSize(11)
           .font("Helvetica")
-          .text(`${index + 1}. ${item}`, { indent: depth * 15 });
-        doc.moveDown(0.2);
-      } else if (typeof item === "object" && item !== null) {
-        renderContent(doc, item, depth);
+          .text(item.text, { indent: 15 });
+        doc.moveDown(0.5);
       }
-    });
-    doc.moveDown(0.3);
-    return;
-  }
-
-  if (typeof data === "object" && data !== null) {
-    for (const [key, value] of Object.entries(data)) {
-      // Section heading
-      const fontSize = depth === 0 ? 15 : depth === 1 ? 13 : 11;
-      const font = depth <= 1 ? "Helvetica-Bold" : "Helvetica-Bold";
-
+    } else if (typeof item === "string") {
       doc
-        .fontSize(fontSize)
-        .font(font)
-        .text(formatKey(key), { indent: depth * 15 });
-      doc.moveDown(0.2);
+        .fontSize(11)
+        .font("Helvetica")
+        .text(`${index + 1}. ${item}`);
+      doc.moveDown(0.3);
+    }
+  });
+}
 
-      renderContent(doc, value, depth + 1);
+/**
+ * Renders object-based content (legacy format, key order NOT guaranteed).
+ */
+function renderObjectContent(doc, data, depth = 0) {
+  for (const [key, value] of Object.entries(data)) {
+    const fontSize = depth === 0 ? 15 : depth === 1 ? 13 : 11;
+
+    doc
+      .fontSize(fontSize)
+      .font("Helvetica-Bold")
+      .text(formatKey(key), { indent: depth * 15 });
+    doc.moveDown(0.2);
+
+    if (typeof value === "string") {
+      doc
+        .fontSize(11)
+        .font("Helvetica")
+        .text(value, { indent: (depth + 1) * 15 });
+      doc.moveDown(0.3);
+    } else if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        if (typeof item === "string") {
+          doc
+            .fontSize(11)
+            .font("Helvetica")
+            .text(`${index + 1}. ${item}`, { indent: (depth + 1) * 15 });
+          doc.moveDown(0.2);
+        } else if (typeof item === "object" && item !== null) {
+          renderObjectContent(doc, item, depth + 1);
+        }
+      });
+      doc.moveDown(0.3);
+    } else if (typeof value === "object" && value !== null) {
+      renderObjectContent(doc, value, depth + 1);
     }
   }
 }
@@ -114,8 +155,8 @@ function renderContent(doc, data, depth = 0) {
  */
 function formatKey(key) {
   return key
-    .replace(/([A-Z])/g, " $1") // camelCase → spaced
-    .replace(/[_-]/g, " ") // snake_case / kebab → spaced
-    .replace(/\b\w/g, (c) => c.toUpperCase()) // capitalize first letters
+    .replace(/([A-Z])/g, " $1")
+    .replace(/[_-]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
     .trim();
 }
