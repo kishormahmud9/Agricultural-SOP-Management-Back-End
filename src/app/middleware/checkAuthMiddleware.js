@@ -22,6 +22,7 @@ export const checkAuthMiddleware =
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
+        include: { farm: true },
       });
 
       if (!user) {
@@ -35,6 +36,14 @@ export const checkAuthMiddleware =
         return res.status(403).json({
           success: false,
           message: "Forbidden",
+        });
+      }
+
+      if (user.farm && user.farm.status === "INACTIVE") {
+        return res.status(403).json({
+          success: false,
+          message:
+            "Your farm account has been suspended. Please contact the system owner.",
         });
       }
 

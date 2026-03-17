@@ -77,7 +77,10 @@ const getNewAccessToken = async (req, res, next) => {
       throw new DevBuildError("Invalid refresh token", StatusCodes.FORBIDDEN);
     }
 
-    const user = await AuthService.findById(prisma, decoded.id);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      include: { farm: true },
+    });
 
     if (!user) {
       throw new DevBuildError("User not found", StatusCodes.NOT_FOUND);
@@ -86,6 +89,13 @@ const getNewAccessToken = async (req, res, next) => {
     if (!user.isVerified) {
       throw new DevBuildError(
         "User is not verified. Please verify your email.",
+        StatusCodes.FORBIDDEN
+      );
+    }
+
+    if (user.farm && user.farm.status === "INACTIVE") {
+      throw new DevBuildError(
+        "Your farm account has been suspended. Please contact the system owner.",
         StatusCodes.FORBIDDEN
       );
     }
