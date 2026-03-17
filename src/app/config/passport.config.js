@@ -15,10 +15,17 @@ passport.use(
             try {
                 const user = await prisma.user.findUnique({
                     where: { email },
+                    include: { farm: true },
                 });
 
                 if (!user) {
                     return done(null, false, { message: "Incorrect email." });
+                }
+
+                if (user.farm && user.farm.status === "INACTIVE") {
+                    return done(null, false, {
+                        message: "Your farm account has been suspended. Please contact the system owner.",
+                    });
                 }
 
                 if (!user.passwordHash) {
@@ -56,6 +63,7 @@ passport.use(
 
                 let user = await prisma.user.findUnique({
                     where: { email },
+                    include: { farm: true },
                 });
 
                 if (!user) {
@@ -68,6 +76,13 @@ passport.use(
                             oauthProvider: "google",
                             oauthProviderId: profile.id,
                         },
+                        include: { farm: true },
+                    });
+                }
+
+                if (user.farm && user.farm.status === "INACTIVE") {
+                    return done(null, false, {
+                        message: "Your farm account has been suspended. Please contact the system owner.",
                     });
                 }
 
