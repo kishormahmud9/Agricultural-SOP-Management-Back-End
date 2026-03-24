@@ -71,11 +71,27 @@ export class SOPController {
           throw new AppError("File missing on server", 404);
         }
 
-        const safeFileName = sanitizeFileName(
+        let ext = path.extname(filePath).toLowerCase();
+        if (!ext && sop.fileType) {
+          ext = sop.fileType.startsWith(".")
+            ? sop.fileType.toLowerCase()
+            : `.${sop.fileType.toLowerCase()}`;
+        }
+
+        // Default to .pdf if extension is still missing (common for digital SOPs)
+        if (!ext) {
+          ext = ".pdf";
+        }
+
+        let safeFileName = sanitizeFileName(
           sop.fileName || path.basename(filePath),
         );
 
-        const ext = path.extname(filePath).toLowerCase();
+        // Ensure the filename ends with the correct extension
+        if (!safeFileName.toLowerCase().endsWith(ext)) {
+          safeFileName += ext;
+        }
+
         const mimeTypes = {
           ".pdf": "application/pdf",
           ".docx":

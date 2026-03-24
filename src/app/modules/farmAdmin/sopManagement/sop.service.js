@@ -111,7 +111,7 @@ const updateSOP = async (req) => {
   if (file) {
     updateData.fileUrl = `/uploads/sops/${file.filename}`;
     updateData.fileName = file.originalname;
-    updateData.fileType = path.extname(file.originalname).replace(".", "");
+    updateData.fileType = path.extname(file.originalname).replace(".", "") || "pdf";
     if (!content) {
       updateData.source = "PDF_UPLOAD";
     }
@@ -199,7 +199,7 @@ const uploadSOP = async (req) => {
       category,
       fileUrl: `/uploads/sops/${req.file.filename}`,
       fileName: req.file.originalname,
-      fileType: req.file.mimetype,
+      fileType: path.extname(req.file.originalname).replace(".", "") || "pdf",
       farmId,
     },
   });
@@ -271,7 +271,7 @@ const createDigitalSOP = async (req) => {
   if (file) {
     sopData.fileUrl = `/uploads/sops/${file.filename}`;
     sopData.fileName = file.originalname;
-    sopData.fileType = path.extname(file.originalname).replace(".", "");
+    sopData.fileType = path.extname(file.originalname).replace(".", "") || "pdf";
   }
 
   const sop = await prisma.sOP.create({
