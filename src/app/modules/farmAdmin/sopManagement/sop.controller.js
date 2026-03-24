@@ -62,6 +62,14 @@ export class SOPController {
         throw new AppError("SOP not found", 404);
       }
 
+      console.log("--- DOWNLOAD SOP DEBUG ---");
+      console.log("ID:", sop.id);
+      console.log("Title:", sop.title);
+      console.log("Source:", sop.source);
+      console.log("DB FileName:", sop.fileName);
+      console.log("DB FileUrl:", sop.fileUrl);
+      console.log("DB FileType:", sop.fileType);
+
       // ── Case 1: SOP has a physical file → stream it ──
       if (sop.fileUrl) {
         const relativePath = sop.fileUrl.replace(/^\/+/, "");
@@ -99,13 +107,14 @@ export class SOPController {
           ".doc": "application/msword",
         };
 
-        res.setHeader(
-          "Content-Type",
-          mimeTypes[ext] || "application/octet-stream",
-        );
-        res.setHeader(
-          "Content-Disposition",
-          `attachment; filename="${safeFileName}"`,
+        res.contentType(mimeTypes[ext] || "application/octet-stream");
+        res.attachment(safeFileName);
+
+        console.log("Response Headers Set:");
+        console.log("- Content-Type:", res.getHeader("Content-Type"));
+        console.log(
+          "- Content-Disposition:",
+          res.getHeader("Content-Disposition"),
         );
 
         const fileStream = fs.createReadStream(filePath);
@@ -123,14 +132,21 @@ export class SOPController {
 
       // ── Case 2: Content-only SOP → generate PDF on-the-fly ──
       if (sop.parsedContent) {
+        console.log("--- CASE 2: Content-only SOP ---");
         const safeFileName = sanitizeFileName(sop.title || "SOP") + ".pdf";
+        console.log("Generated FileName:", safeFileName);
 
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader(
-          "Content-Disposition",
-          `attachment; filename="${safeFileName}"`,
+        res.contentType("application/pdf");
+        res.attachment(safeFileName);
+
+        console.log("Response Headers Set (Case 2):");
+        console.log("- Content-Type:", res.getHeader("Content-Type"));
+        console.log(
+          "- Content-Disposition:",
+          res.getHeader("Content-Disposition"),
         );
 
+        console.log("Generating PDF stream...");
         const pdfStream = generateSOPPdf(sop);
 
         pdfStream.on("error", (err) => {
@@ -141,14 +157,12 @@ export class SOPController {
         });
 
         pdfStream.pipe(res);
+        console.log("PDF Stream piped to response.");
         return;
       }
 
       // ── No file and no content ──
-      throw new AppError(
-        "This SOP has no downloadable file or content",
-        404,
-      );
+      throw new AppError("This SOP has no downloadable file or content", 404);
     } catch (error) {
       next(error);
     }
