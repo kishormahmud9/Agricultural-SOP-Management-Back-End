@@ -42,8 +42,7 @@ export const PlanService = {
       stripeMonthlyPriceId: plan.stripeMonthlyPriceId,
       stripeYearlyPriceId: plan.stripeYearlyPriceId,
       employeeLimit: plan.employeeLimit,
-      employeeLimitDisplay:
-        plan.employeeLimit >= 9999 ? "25+" : `${plan.employeeLimit}`,
+      employeeLimitDisplay: `${plan.employeeLimit}`,
       features: plan.features,
       storageLimitGB: plan.storageLimitGB,
       // trialDays: plan.trialDays,
