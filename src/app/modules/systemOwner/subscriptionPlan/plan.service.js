@@ -45,7 +45,7 @@ export const PlanService = {
       employeeLimitDisplay: `${plan.employeeLimit}`,
       features: plan.features,
       storageLimitGB: plan.storageLimitGB,
-      // trialDays: plan.trialDays,
+      trialDays: plan.trialDays,
       isActive: plan.isActive,
       farmsUsing: plan._count.subscriptions,
       createdAt: plan.createdAt,
