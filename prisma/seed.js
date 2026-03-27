@@ -22,7 +22,13 @@ async function main() {
       stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
       trialDays: 14,
-      isActive: true
+      isActive: true,
+      features: [
+        "Up to 10 Users",
+        "SOP creation & execution",
+        "Task assignment",
+        "Completion tracking",
+      ],
     },
     create: {
       name: "Basic",
@@ -32,8 +38,14 @@ async function main() {
       stripeYearlyPriceId: "price_1T9ClSQ11TGqLUwmO4h10oc7",
       employeeLimit: 10,
       trialDays: 14,
-      isActive: true
-    }
+      isActive: true,
+      features: [
+        "Up to 10 Users",
+        "SOP creation & execution",
+        "Task assignment",
+        "Completion tracking",
+      ],
+    },
   });
 
   const standardPlan = await prisma.plan.upsert({
@@ -45,7 +57,13 @@ async function main() {
       stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
       employeeLimit: 25,
       trialDays: 14,
-      isActive: true
+      isActive: true,
+      features: [
+        "Up to 25 Users",
+        "Everything in Basic",
+        "Faster support",
+        "Better usability",
+      ],
     },
     create: {
       name: "Standard",
@@ -55,8 +73,14 @@ async function main() {
       stripeYearlyPriceId: "price_1T9CnjQ11TGqLUwm7hD86H8d",
       employeeLimit: 25,
       trialDays: 14,
-      isActive: true
-    }
+      isActive: true,
+      features: [
+        "Up to 25 Users",
+        "Everything in Basic",
+        "Faster support",
+        "Better usability",
+      ],
+    },
   });
 
   const professionalPlan = await prisma.plan.upsert({
@@ -68,7 +92,13 @@ async function main() {
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 35,
       trialDays: 0,
-      isActive: true
+      isActive: true,
+      features: [
+        "Up to 35 Users",
+        "Everything in Standard",
+        "Priority onboarding",
+        "Early access to features",
+      ],
     },
     create: {
       name: "Professional",
@@ -78,14 +108,20 @@ async function main() {
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 35,
       trialDays: 0,
-      isActive: true
-    }
+      isActive: true,
+      features: [
+        "Up to 35 Users",
+        "Everything in Standard",
+        "Priority onboarding",
+        "Early access to features",
+      ],
+    },
   });
 
   console.log("✅ Plans created:", [
     basicPlan.name,
     standardPlan.name,
-    professionalPlan.name
+    professionalPlan.name,
   ]);
 
   // -------------------------------
@@ -97,15 +133,15 @@ async function main() {
       name: "Demo Farm",
       country: "Bangladesh",
       defaultLanguage: "en",
-      status: "ACTIVE"
+      status: "ACTIVE",
     },
     create: {
       id: "demo-farm-id",
       name: "Demo Farm",
       country: "Bangladesh",
       defaultLanguage: "en",
-      status: "ACTIVE"
-    }
+      status: "ACTIVE",
+    },
   });
 
   console.log("✅ Farm created:", farm.name);
@@ -119,21 +155,17 @@ async function main() {
       planId: basicPlan.id,
       status: "ACTIVE",
       startDate: new Date(),
-      endDate: new Date(
-        new Date().setMonth(new Date().getMonth() + 1)
-      ),
-      price: basicPlan.priceMonthly
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      price: basicPlan.priceMonthly,
     },
     create: {
       farmId: farm.id,
       planId: basicPlan.id,
       status: "ACTIVE",
       startDate: new Date(),
-      endDate: new Date(
-        new Date().setMonth(new Date().getMonth() + 1)
-      ),
-      price: basicPlan.priceMonthly
-    }
+      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      price: basicPlan.priceMonthly,
+    },
   });
 
   console.log("✅ Subscription created:", subscription.status);
@@ -155,7 +187,7 @@ async function main() {
       passwordHash,
       role: "SYSTEM_OWNER",
       status: "ACTIVE",
-      isVerified: true
+      isVerified: true,
     },
     create: {
       name: "System Owner",
@@ -163,8 +195,8 @@ async function main() {
       passwordHash,
       role: "SYSTEM_OWNER",
       status: "ACTIVE",
-      isVerified: true
-    }
+      isVerified: true,
+    },
   });
 
   // FARM ADMIN
@@ -176,7 +208,7 @@ async function main() {
       role: "FARM_ADMIN",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
+      farmId: farm.id,
     },
     create: {
       name: "Farm Admin",
@@ -185,8 +217,8 @@ async function main() {
       role: "FARM_ADMIN",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
-    }
+      farmId: farm.id,
+    },
   });
 
   // MANAGER
@@ -198,7 +230,7 @@ async function main() {
       role: "MANAGER",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
+      farmId: farm.id,
     },
     create: {
       name: "Manager User",
@@ -207,8 +239,8 @@ async function main() {
       role: "MANAGER",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
-    }
+      farmId: farm.id,
+    },
   });
 
   // EMPLOYEE
@@ -220,7 +252,7 @@ async function main() {
       role: "EMPLOYEE",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
+      farmId: farm.id,
     },
     create: {
       name: "Employee User",
@@ -229,8 +261,8 @@ async function main() {
       role: "EMPLOYEE",
       status: "ACTIVE",
       isVerified: true,
-      farmId: farm.id
-    }
+      farmId: farm.id,
+    },
   });
 
   console.log("✅ Users created:");
@@ -238,7 +270,7 @@ async function main() {
     { role: systemOwner.role, email: systemOwner.email },
     { role: farmAdmin.role, email: farmAdmin.email },
     { role: manager.role, email: manager.email },
-    { role: employee.role, email: employee.email }
+    { role: employee.role, email: employee.email },
   ]);
 
   console.log("🎉 Database seeding completed successfully!");
