@@ -98,7 +98,8 @@ const getSopFile = async (sopId) => {
     throw new Error("SOP file not found in database");
   }
 
-  const filePath = path.resolve(sop.fileUrl);
+  const relativePath = sop.fileUrl.replace(/^\/+/, "");
+  const filePath = path.resolve(process.cwd(), relativePath);
 
   return {
     fileName: `${sop.title}.pdf`,

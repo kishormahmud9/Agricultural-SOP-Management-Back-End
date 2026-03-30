@@ -99,9 +99,8 @@ const getSopDetail = async (req, res, next) => {
       }
 
       // Local file
-      const localPath = path.isAbsolute(sop.fileUrl)
-        ? sop.fileUrl
-        : path.join(process.cwd(), sop.fileUrl);
+      const relativePath = sop.fileUrl.replace(/^\/+/, "");
+      const localPath = path.resolve(process.cwd(), relativePath);
 
       if (!fs.existsSync(localPath)) {
         return res.status(404).json({
