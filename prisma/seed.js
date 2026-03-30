@@ -91,7 +91,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 35,
-      trialDays: 0,
+      trialDays: 14,
       isActive: true,
       features: [
         "Up to 35 Users",
@@ -107,7 +107,7 @@ async function main() {
       stripeMonthlyPriceId: "price_1T8QqwQ11TGqLUwmS9ntY7kx",
       stripeYearlyPriceId: "price_1T8QrbQ11TGqLUwm1GmQJ2Kl",
       employeeLimit: 35,
-      trialDays: 0,
+      trialDays: 14,
       isActive: true,
       features: [
         "Up to 35 Users",
