@@ -49,6 +49,12 @@ router.delete(
   MessageController.deleteMessage,
 );
 
+router.patch(
+  "/oversight/:messageId/read",
+  checkAuthMiddleware(Role.FARM_ADMIN),
+  MessageController.markMessageAsRead,
+);
+
 // Admin Inbox & History (Admins can message Managers)
 router.get(
   "/contacts",

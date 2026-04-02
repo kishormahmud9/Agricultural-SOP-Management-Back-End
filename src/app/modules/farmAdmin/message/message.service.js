@@ -134,6 +134,22 @@ const deleteMessage = async (messageId, farmId) => {
   }
 };
 
+const markMessageAsRead = async (messageId, farmId) => {
+  try {
+    const updatedMessage = await prisma.message.update({
+      where: {
+        id: messageId,
+        farmId, // ensure it belongs to the admin's farm
+      },
+      data: { isRead: true },
+    });
+    return updatedMessage;
+  } catch (error) {
+    console.error("MARK_MESSAGE_AS_READ_ERROR:", error.message);
+    throw error;
+  }
+};
+
 const getInbox = async (adminId, farmId) => {
   try {
     // Farm Admin can message Managers
@@ -367,6 +383,7 @@ export const MessageService = {
   toggleMessagingStatus,
   clearAllMessages,
   deleteMessage,
+  markMessageAsRead,
   getInbox,
   getHistory,
   sendMessage,

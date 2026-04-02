@@ -99,6 +99,22 @@ const deleteMessage = async (req, res) => {
   }
 };
 
+const markMessageAsRead = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    await MessageService.markMessageAsRead(messageId, req.user.farmId);
+    return res.status(200).json({
+      success: true,
+      message: "Message marked as read",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const getInbox = async (req, res) => {
   try {
     const inbox = await MessageService.getInbox(req.user.id, req.user.farmId);
@@ -239,6 +255,7 @@ export const MessageController = {
   toggleMessagingStatus,
   clearAllMessages,
   deleteMessage,
+  markMessageAsRead,
   getInbox,
   getHistory,
   sendMessage,
