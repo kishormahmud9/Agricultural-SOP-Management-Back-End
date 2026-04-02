@@ -143,8 +143,8 @@ const getInbox = async (adminId, farmId) => {
         OR: [{ senderId: adminId }, { receiverId: adminId }],
       },
       include: {
-        sender: { select: { id: true, name: true, role: true } },
-        receiver: { select: { id: true, name: true, role: true } },
+        sender: { select: { id: true, name: true, role: true, avatarUrl: true } },
+        receiver: { select: { id: true, name: true, role: true, avatarUrl: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -160,6 +160,7 @@ const getInbox = async (adminId, farmId) => {
           userId: otherUser.id,
           name: otherUser.name,
           role: otherUser.role,
+          avatarUrl: otherUser.avatarUrl,
           lastMessage: msg.content,
           lastMessageAt: msg.createdAt,
           unreadCount: msg.receiverId === adminId && !msg.isRead ? 1 : 0,
@@ -207,6 +208,7 @@ const getHistory = async (adminId, partnerId, farmId) => {
         sender: {
           select: {
             role: true,
+            avatarUrl: true,
           },
         },
         senderId: true,
