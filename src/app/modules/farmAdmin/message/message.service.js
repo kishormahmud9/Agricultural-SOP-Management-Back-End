@@ -152,12 +152,9 @@ const markMessageAsRead = async (messageId, farmId) => {
 
 const getInbox = async (adminId, farmId) => {
   try {
-    // Farm Admin can message Managers
+    // Farm Admin sees all messages in the farm (Oversight View)
     const messages = await prisma.message.findMany({
-      where: {
-        farmId,
-        OR: [{ senderId: adminId }, { receiverId: adminId }],
-      },
+      where: { farmId },
       include: {
         sender: { select: { id: true, name: true, role: true, avatarUrl: true } },
         receiver: { select: { id: true, name: true, role: true, avatarUrl: true } },
@@ -165,28 +162,68 @@ const getInbox = async (adminId, farmId) => {
       orderBy: { createdAt: "desc" },
     });
 
-    const conversationMap = new Map();
+    const threadMap = new Map();
 
     for (const msg of messages) {
-      const otherUser = msg.senderId === adminId ? msg.receiver : msg.sender;
-      if (!otherUser) continue;
+      // Create a unique key for the pair of users (sorted IDs)
+      const threadKey = [msg.senderId, msg.receiverId].sort().join("_");
 
-      if (!conversationMap.has(otherUser.id)) {
-        conversationMap.set(otherUser.id, {
-          userId: otherUser.id,
-          name: otherUser.name,
-          role: otherUser.role,
-          avatarUrl: otherUser.avatarUrl,
+      if (!threadMap.has(threadKey)) {
+        // Determine which user to display for this thread
+        let primaryUser;
+        if (msg.senderId === adminId) {
+          primaryUser = msg.receiver;
+        } else if (msg.receiverId === adminId) {
+          primaryUser = msg.sender;
+        } else {
+          // Oversight prioritization: Employee > Manager > Admin
+          const employee =
+            msg.sender.role === Role.EMPLOYEE
+              ? msg.sender
+              : msg.receiver.role === Role.EMPLOYEE
+                ? msg.receiver
+                : null;
+          const manager =
+            msg.sender.role === Role.MANAGER
+              ? msg.sender
+              : msg.receiver.role === Role.MANAGER
+                ? msg.receiver
+                : null;
+
+          primaryUser = employee || manager || msg.sender;
+        }
+
+        threadMap.set(threadKey, {
+          userId: primaryUser.id,
+          name: primaryUser.name,
+          role: primaryUser.role,
+          avatarUrl: primaryUser.avatarUrl,
           lastMessage: msg.content,
           lastMessageAt: msg.createdAt,
-          unreadCount: msg.receiverId === adminId && !msg.isRead ? 1 : 0,
+          // If admin is one of the parties, only count messages SENT TO the admin.
+          // Otherwise, count any unread message in the thread as oversight.
+          unreadCount: 0,
         });
-      } else if (msg.receiverId === adminId && !msg.isRead) {
-        conversationMap.get(otherUser.id).unreadCount += 1;
+
+        const data = threadMap.get(threadKey);
+        const isAdminInvolved = msg.senderId === adminId || msg.receiverId === adminId;
+        if (!msg.isRead) {
+          if (!isAdminInvolved || msg.receiverId === adminId) {
+            data.unreadCount = 1;
+          }
+        }
+      } else {
+        const data = threadMap.get(threadKey);
+        const isAdminInvolved = msg.senderId === adminId || msg.receiverId === adminId;
+        if (!msg.isRead) {
+          if (!isAdminInvolved || msg.receiverId === adminId) {
+            data.unreadCount += 1;
+          }
+        }
       }
     }
 
-    return Array.from(conversationMap.values()).sort(
+    return Array.from(threadMap.values()).sort(
       (a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt),
     );
   } catch (error) {
