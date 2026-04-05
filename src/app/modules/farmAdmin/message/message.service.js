@@ -194,7 +194,8 @@ const getInbox = async (adminId, farmId) => {
         }
 
         threadMap.set(threadKey, {
-          userId: primaryUser.id,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId,
           name: primaryUser.name,
           role: primaryUser.role,
           avatarUrl: primaryUser.avatarUrl,
@@ -360,7 +361,8 @@ const getOversightInbox = async (farmId, query) => {
 
         threadMap.set(threadKey, {
           threadId: threadKey,
-          userId: primaryUser.id,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId,
           name: primaryUser.name,
           role: primaryUser.role,
           avatarUrl: primaryUser.avatarUrl,
