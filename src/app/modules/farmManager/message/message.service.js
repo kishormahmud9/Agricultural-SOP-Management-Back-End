@@ -134,7 +134,8 @@ const getInbox = async ({ farmId, userId }) => {
 
       if (!conversationsMap.has(otherUser.id)) {
         conversationsMap.set(otherUser.id, {
-          userId: otherUser.id,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId,
           name: otherUser.name,
           role: otherUser.role,
           lastMessage: msg.content,
