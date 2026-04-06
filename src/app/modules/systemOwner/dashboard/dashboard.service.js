@@ -58,7 +58,11 @@ export const DashboardService = {
         orderBy: { createdAt: "desc" },
         include: {
           users: true,
-          subscription: true,
+          subscription: {
+            include: {
+              plan: true,
+            },
+          },
         },
       }),
 
