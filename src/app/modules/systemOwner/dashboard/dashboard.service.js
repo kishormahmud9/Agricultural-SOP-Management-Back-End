@@ -75,7 +75,7 @@ export const DashboardService = {
       name: farm.name,
       status: farm.status,
       users: farm.users.length,
-      plan: farm.subscription?.plan || "N/A",
+      plan: farm.subscription?.plan?.name || "N/A",
       revenue: farm.subscription?.price || 0,
     }));
 
