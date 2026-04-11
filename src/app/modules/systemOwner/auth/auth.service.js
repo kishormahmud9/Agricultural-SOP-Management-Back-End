@@ -2,8 +2,10 @@ import prisma from "../../../prisma/client.js";
 import bcrypt from "bcrypt";
 import DevBuildError from "../../../lib/DevBuildError.js";
 import { StatusCodes } from "http-status-codes";
-import { createUserTokens } from "../../../utils/userTokenGenerator.js";
+import { createUserTokens, createNewAccessTokenUsingRefreshToken } from "../../../utils/userTokenGenerator.js";
 import { OtpService } from "../../otp/otp.service.js";
+import { verifyToken } from "../../../utils/jwt.js";
+import { envVars } from "../../../config/env.js";
 
 const loginSystemOwner = async (email, password) => {
     // 1. Check if user exists
@@ -153,5 +155,28 @@ export const SystemOwnerAuthService = {
         });
 
         return true;
+    },
+
+    async refreshAccessToken(refreshToken) {
+        // 1. Verify token and get user ID
+        const decoded = verifyToken(refreshToken, envVars.JWT_REFRESH_TOKEN);
+
+        // 2. Issuing new access token (this handles user existence and status checks)
+        const accessToken = await createNewAccessTokenUsingRefreshToken(
+            prisma,
+            refreshToken
+        );
+
+        // 3. Verify user is specifically a SYSTEM_OWNER (security layer for this module)
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            select: { role: true }
+        });
+
+        if (!user || user.role !== "SYSTEM_OWNER") {
+            throw new DevBuildError("Unauthorized access", StatusCodes.FORBIDDEN);
+        }
+
+        return accessToken;
     },
 };
