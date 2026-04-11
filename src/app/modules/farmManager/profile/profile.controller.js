@@ -42,7 +42,7 @@ const updateLanguage = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, avatarUrl } = req.body;
     let avatarData = {};
 
     if (req.file) {
@@ -50,6 +50,8 @@ const updateProfile = async (req, res) => {
         avatarUrl: `${req.protocol}://${req.get("host")}/uploads/profiles/${req.file.filename}`,
         avatarUrlPath: req.file.path,
       };
+    } else if (avatarUrl) {
+      avatarData = { avatarUrl };
     }
 
     const result = await ProfileService.updateProfile(req.user.id, {
