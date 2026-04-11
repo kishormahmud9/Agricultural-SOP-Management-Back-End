@@ -18,6 +18,7 @@ const getProfile = async (managerId) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    avatarUrl: user.avatarUrl,
     farmName: user.farm?.name ?? "—",
     language: user.language ?? "English",
   };
@@ -46,6 +47,7 @@ const updateLanguage = async (managerId, language) => {
     id: updated.id,
     name: updated.name,
     email: updated.email,
+    avatarUrl: updated.avatarUrl,
     farmName: updated.farm?.name ?? "—",
     language: updated.language ?? "English",
   };
