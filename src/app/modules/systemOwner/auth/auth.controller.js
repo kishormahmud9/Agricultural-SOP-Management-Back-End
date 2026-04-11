@@ -2,6 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import { SystemOwnerAuthService } from "./auth.service.js";
 import { sendResponse } from "../../../utils/sendResponse.js";
 import { setAuthCookie } from "../../../utils/setCookie.js";
+import { envVars } from "../../../config/env.js";
+import DevBuildError from "../../../lib/DevBuildError.js";
 
 const loginSystemOwner = async (req, res, next) => {
     try {
@@ -18,7 +20,6 @@ const loginSystemOwner = async (req, res, next) => {
             statusCode: StatusCodes.OK,
             data: {
                 accessToken: result.tokens.accessToken,
-                refreshToken: result.tokens.refreshToken,
                 user: result.user,
             },
         });
@@ -29,6 +30,60 @@ const loginSystemOwner = async (req, res, next) => {
 
 export const SystemOwnerAuthController = {
     loginSystemOwner,
+    
+    async refreshAccessToken(req, res, next) {
+        try {
+            const refreshToken = req.cookies?.refreshToken;
+
+            if (!refreshToken) {
+                throw new DevBuildError(
+                    "No refresh token received from cookies",
+                    StatusCodes.BAD_REQUEST
+                );
+            }
+
+            const accessToken = await SystemOwnerAuthService.refreshAccessToken(refreshToken);
+
+            // Re-set cookies to refresh expiration if needed
+            setAuthCookie(res, { accessToken, refreshToken });
+
+            sendResponse(res, {
+                success: true,
+                message: "New access token retrieved successfully",
+                statusCode: StatusCodes.OK,
+                data: {
+                    accessToken,
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    async logout(req, res, next) {
+        try {
+            res.clearCookie("accessToken", {
+                httpOnly: true,
+                secure: envVars.NODE_ENV === "production",
+                sameSite: "none",
+            });
+
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: envVars.NODE_ENV === "production",
+                sameSite: "none",
+            });
+
+            sendResponse(res, {
+                success: true,
+                message: "System Owner logged out successfully",
+                statusCode: StatusCodes.OK,
+                data: null,
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
 
     async forgotPassword(req, res, next) {
         try {
