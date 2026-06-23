@@ -43,7 +43,7 @@ export const FarmService = {
 
   // ✅ CREATE FARM
   async createFarm(payload) {
-    const { name, adminName, adminEmail, password, country, defaultLanguage } = payload;
+    const { name, adminName, adminEmail, password, country, defaultLanguage, plan, startDate, endDate } = payload;
 
     return prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findUnique({
@@ -55,6 +55,51 @@ export const FarmService = {
           "Admin email already exists",
           StatusCodes.CONFLICT,
         );
+      }
+
+      // Find the selected plan
+      const planRecord = await tx.plan.findFirst({
+        where: {
+          OR: [
+            { id: plan },
+            { name: { equals: plan, mode: "insensitive" } },
+          ],
+        },
+      });
+
+      if (!planRecord) {
+        throw new DevBuildError(
+          "Selected plan not found",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        throw new DevBuildError(
+          "Invalid start date or end date format",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      if (start >= end) {
+        throw new DevBuildError(
+          "Start date must be before end date",
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      // Calculate diff in days to decide monthly vs yearly pricing
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      let price = planRecord.priceMonthly;
+      let priceType = "monthly";
+      if (diffDays >= 360) {
+        price = planRecord.priceYearly;
+        priceType = "yearly";
       }
 
       const farm = await tx.farm.create({
@@ -80,6 +125,19 @@ export const FarmService = {
         },
       });
 
+      // Create subscription for the farm
+      const subscription = await tx.subscription.create({
+        data: {
+          farmId: farm.id,
+          planId: planRecord.id,
+          status: "ACTIVE",
+          startDate: start,
+          endDate: end,
+          price,
+          priceType,
+        },
+      });
+
       return {
         farmId: farm.id,
         farmName: farm.name,
@@ -87,6 +145,16 @@ export const FarmService = {
           id: admin.id,
           name: admin.name,
           email: admin.email,
+        },
+        subscription: {
+          id: subscription.id,
+          planId: planRecord.id,
+          planName: planRecord.name,
+          status: subscription.status,
+          startDate: subscription.startDate,
+          endDate: subscription.endDate,
+          price: subscription.price,
+          priceType: subscription.priceType,
         },
       };
     });
