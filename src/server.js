@@ -1,6 +1,6 @@
 import app from "./app.js";
 import { envVars } from "./app/config/env.js";
-import { connectRedis } from "./app/config/redis.config.js";
+// import { connectRedis } from "./app/config/redis.config.js";
 import prisma from "./app/prisma/client.js";
 
 let server;
@@ -12,8 +12,8 @@ const startServer = async () => {
     console.log(`Environment: ${envVars.NODE_ENV}`);
 
     // Connect Redis
-    await connectRedis();
-    console.log("Redis Connected Successfully 🚚✅");
+    // await connectRedis();
+    // console.log("Redis Connected Successfully 🚚✅");
 
     // Start server
     server = app.listen(PORT, () => {
